@@ -1,0 +1,6 @@
+program BumoProject;
+i:integer := 0;
+begin
+  i := "aa";
+end.
+  
