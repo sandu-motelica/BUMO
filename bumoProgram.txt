@@ -1,6 +1,9 @@
 program BumoProject;
 i:integer := 0;
+a:string := '5';
+x:string := "aaa";
 begin
-  i := "aa";
+  i := a;
+  box:= false;
 end.
   

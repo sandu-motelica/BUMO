@@ -5,19 +5,29 @@
 %option noyywrap
 %%
 "program" {return PROGR;} 
-"integer" { return INTEGER; }
-"real" { return REAL; }
-"char" { return CHAR; }
-"string" { return STRING; }
-"boolean" { return BOOLEAN; }
+"integer"|"real"|"char"|"string"|"boolean" {yylval.str = strdup(yytext);  return TYPE; }
 "begin" { return BGIN; }
 "end" { return END; }
-[a-zA-Z][a-zA-Z0-9_]* { return IDENTIFIER;}
+"true"|"false" { return BOOL_VALUE;}
+[a-zA-Z][a-zA-Z0-9_]* {yylval.str = strdup(yytext); return IDENTIFIER;}
 ":=" {return ASSIGN;}
-0|[1-9][0-9]* {return INT_VALUE;}
-0\.[0-9]+|[1-9][0-9]*\.[0-9]+  {return REAL_VALUE;}
-\'.\' {return CHAR_VALUE;}
-\".*\" {return STRING_VALUE;}
+0|[1-9][0-9]* {yylval.intval = atoi(yytext); return INT_VALUE;}
+0\.[0-9]+|[1-9][0-9]*\.[0-9]+  { 
+                            char *real, *zecim, *ch = strdup(yytext);
+                            real = strtok(ch, ".");
+                            yylval.ftval = atoi(real);
+                            zecim = strtok(NULL,".");
+
+                            int k = 1;
+                            int n = strlen(zecim);
+                            while (n) { n--; k *= 10; }
+
+                            yylval.ftval += (float)atoi(zecim) / k;
+                            return REAL_VALUE;}
+\'.\' {yylval.str = strdup(yytext); return CHAR_VALUE;}
+\".*\" {yylval.str = strdup(yytext); return STRING_VALUE;}
+"//".*          {}
+"/*".*"*/"      {}
 [ \t] ;
 \n {yylineno++;}
 . {return yytext[0];}

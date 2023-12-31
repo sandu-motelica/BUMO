@@ -52,17 +52,14 @@ extern int yydebug;
     ASSIGN = 258,
     INT_VALUE = 259,
     CHAR_VALUE = 260,
-    STRING_VALUE = 261,
-    REAL_VALUE = 262,
+    REAL_VALUE = 261,
+    BOOL_VALUE = 262,
     PROGR = 263,
     BGIN = 264,
     END = 265,
     IDENTIFIER = 266,
-    INTEGER = 267,
-    REAL = 268,
-    CHAR = 269,
-    STRING = 270,
-    BOOLEAN = 271
+    TYPE = 267,
+    STRING_VALUE = 268
   };
 #endif
 
@@ -70,8 +67,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 11 "bumo.y"
+#line 14 "bumo.y"
 
+    char* str;
+    int intval;
+    float ftval;
 
 #line 77 "bumo.tab.h"
 
