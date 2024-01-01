@@ -23,11 +23,12 @@ bool toBool(const string& val);
 }
 %token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
-%token<intval> INT_VALUE
+%token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
 %type<str> valoare_str 
 %type<bval> bool_expr
 %type<intval> int_expr 
+%type<ftval> real_expr 
 // %type<bloc> funct
 // %type<param_type> 
 %start st
@@ -38,6 +39,8 @@ bool toBool(const string& val);
 
 %left ADD SUB  
 %left MUL DIV 
+
+
 
 
 %%
@@ -68,12 +71,12 @@ var_declaration:
             exit(EXIT_FAILURE); }}
     | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
     | IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($1,$3,to_string($5),false,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN REAL_VALUE ';' { checkVarDecl($1,$3,to_string($5),false,yylineno); }
+    | IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($1,$3,to_string($5),false,yylineno); }
     | IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($1,$3,$5,false,yylineno); }
     | IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($1,$3,$5 ? "true" : "false",false,yylineno); }
     | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
     | CONST IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($2,$4,to_string($6),true,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN REAL_VALUE ';' { checkVarDecl($2,$4,to_string($6),true,yylineno); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($2,$4,to_string($6),true,yylineno); }
     | CONST IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($2,$4,$6,true,yylineno); }
     | CONST IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($2,$4,$6 ? "true" : "false",true,yylineno); }
     ;
@@ -111,7 +114,7 @@ statement:
     | IDENTIFIER ASSIGN valoare_str ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare_str ';' // verificare
     | IDENTIFIER dimensiune ASSIGN int_expr ';' // verificare
-    | IDENTIFIER dimensiune ASSIGN REAL_VALUE ';'  // verificare   
+    | IDENTIFIER dimensiune ASSIGN real_expr ';'  // verificare   
      ;
 list: // verificarea cazului cu virgula in plus
     | int_expr
@@ -127,6 +130,13 @@ int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
   |  int_expr DIV int_expr  {$$ = $1 / $3;}
   |  '(' int_expr ')' {$$ = $2; }
   |  INT_VALUE {$$ = $1;}
+  ;
+real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
+  |  real_expr SUB real_expr  {$$ = $1 - $3;}
+  |  real_expr MUL real_expr  {$$ = $1 * $3;}
+  |  real_expr DIV real_expr  {$$ = $1 / $3;}
+  |  '(' real_expr ')' {$$ = $2; }
+  |  REAL_VALUE {$$ = $1;}
   ;
 bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
   |  bool_expr OR bool_expr  {$$ = $1 || $3;}
