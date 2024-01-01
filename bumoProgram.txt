@@ -1,7 +1,14 @@
 program BumoProject;
-i:boolean := true;
+//i:boolean := true;
 a:integer[100] := {"asdf"};
 const x:integer := 2-3*5; 
+val:boolean := !(true && false || false || true); 
+
+//function geniu(aux:integer):boolean
+//begin
+//  number:integer :=6;
+//end;
+
 begin
   a[1] := 5;
 end.

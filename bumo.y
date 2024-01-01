@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <vector>
+#include <stdbool.h>
 #include "VarList.h"
 extern FILE* yyin;
 extern char* yytext;
@@ -11,25 +12,33 @@ string currentScope = "main";
 class VarList variabile;
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
+bool toBool(const string& val);
 %}
 
 %union {
     char* str;
     int intval;
     float ftval;
+    bool bval;
 }
-%token ASSIGN PROGR BGIN END CONST FUNCTION
+%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE
 %token<ftval> REAL_VALUE
-%type<str> valoare_str
-%type<intval> int_expr
+%type<str> valoare_str 
+%type<bval> bool_expr
+%type<intval> int_expr 
 // %type<bloc> funct
-// %type<param_type> param
+// %type<param_type> 
 %start st
 
-%left '+' '-' 
-%left '*'
+%left NOT 
+%left AND 
+%left OR 
+
+%left ADD SUB  
+%left MUL DIV 
+
 
 %%
 
@@ -61,14 +70,16 @@ var_declaration:
     | IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($1,$3,to_string($5),false,yylineno); }
     | IDENTIFIER ':' TYPE ASSIGN REAL_VALUE ';' { checkVarDecl($1,$3,to_string($5),false,yylineno); }
     | IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($1,$3,$5,false,yylineno); }
+    | IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($1,$3,$5 ? "true" : "false",false,yylineno); }
     | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
     | CONST IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($2,$4,to_string($6),true,yylineno); }
     | CONST IDENTIFIER ':' TYPE ASSIGN REAL_VALUE ';' { checkVarDecl($2,$4,to_string($6),true,yylineno); }
     | CONST IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($2,$4,$6,true,yylineno); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($2,$4,$6 ? "true" : "false",true,yylineno); }
     ;
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' param ')' ':' TYPE ';' block /*{  $$ = new VarList("main");
+    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  block /*{  $$ = new VarList("main");
                                                             $$.addFunction($2,$7,$4); }*/
     ;
 
@@ -81,7 +92,6 @@ block:
 
 valoare_str:
      CHAR_VALUE    {$$ = $1;}
-    | BOOL_VALUE    {$$ = $1;}
     | STRING_VALUE  {$$ = $1;}
     ;
 dimensiune:
@@ -111,13 +121,19 @@ list: // verificarea cazului cu virgula in plus
     | list ',' REAL_VALUE 
     | list ',' valoare_str
     ;
-int_expr :  int_expr '+' int_expr  {$$ = $1 + $3;}
-  |  int_expr '-' int_expr  {$$ = $1 - $3;}
-  |  int_expr '*' int_expr  {$$ = $1 * $3;}
+int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
+  |  int_expr SUB int_expr  {$$ = $1 - $3;}
+  |  int_expr MUL int_expr  {$$ = $1 * $3;}
+  |  int_expr DIV int_expr  {$$ = $1 / $3;}
   |  '(' int_expr ')' {$$ = $2; }
   |  INT_VALUE {$$ = $1;}
   ;
-
+bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
+  |  bool_expr OR bool_expr  {$$ = $1 || $3;}
+  |  NOT bool_expr  {$$ = !$2;}
+  |  '(' bool_expr ')' {$$ = $2; }
+  |  BOOL_VALUE {$$ = toBool($1);}
+  ;
 %%
 void yyerror(const char * s){
 printf("error: %s at line:%d\n",s,yylineno);
@@ -144,6 +160,10 @@ void checkVarIsDecl(const string& name,const string& value, int line){
         fprintf(stderr, "%d: Error: Invalid value for variable '%s'\n",line, name.c_str());
         exit(EXIT_FAILURE); 
     }
+}
+bool toBool(const string& val){
+    if(val == "true") return true;
+    return false;
 }
 
 int main(int argc, char** argv){

@@ -28,6 +28,13 @@
                             return REAL_VALUE;}
 \'.\' {yylval.str = strdup(yytext); return CHAR_VALUE;}
 \"[^"]*\" {yylval.str = strdup(yytext); return STRING_VALUE;}
+"+" {return ADD;}
+"-" {return SUB;}
+"*" {return MUL;}
+"\/" {return DIV;}
+"||" {return OR;}
+"&&" {return AND;}
+"!" {return NOT;}
 "//".*          {}
 "/*".*"*/"      {}
 [ \t] ;
