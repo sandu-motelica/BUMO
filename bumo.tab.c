@@ -76,10 +76,12 @@ extern char* yytext;
 extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
+string currentScope = "main";
 class VarList variabile;
-void checkVar(const string& name,const string& type,const string& value, int line);
+void checkVarDecl(const string& name,const string& type,const string& value, bool ct, int line);
+void checkVarIsDecl(const string& name,const string& value, int line);
 
-#line 83 "bumo.tab.c"
+#line 85 "bumo.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -128,16 +130,18 @@ extern int yydebug;
   enum yytokentype
   {
     ASSIGN = 258,
-    INT_VALUE = 259,
-    CHAR_VALUE = 260,
-    REAL_VALUE = 261,
-    BOOL_VALUE = 262,
-    PROGR = 263,
-    BGIN = 264,
-    END = 265,
-    IDENTIFIER = 266,
-    TYPE = 267,
-    STRING_VALUE = 268
+    PROGR = 259,
+    BGIN = 260,
+    END = 261,
+    CONST = 262,
+    FUNCTION = 263,
+    IDENTIFIER = 264,
+    TYPE = 265,
+    STRING_VALUE = 266,
+    CHAR_VALUE = 267,
+    BOOL_VALUE = 268,
+    INT_VALUE = 269,
+    REAL_VALUE = 270
   };
 #endif
 
@@ -145,13 +149,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 14 "bumo.y"
+#line 16 "bumo.y"
 
     char* str;
     int intval;
     float ftval;
 
-#line 155 "bumo.tab.c"
+#line 159 "bumo.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -470,19 +474,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  5
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   41
+#define YYLAST   146
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  17
+#define YYNTOKENS  29
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  7
+#define YYNNTS  15
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  19
+#define YYNRULES  47
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  45
+#define YYNSTATES  114
 
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   268
+#define YYMAXUTOK   270
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -498,15 +502,15 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,    14,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,    16,    15,
+      24,    25,    18,    16,    26,    17,    19,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,    21,    20,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,    27,     2,    28,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,    22,     2,    23,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -520,15 +524,19 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,    12,    13
+       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
+      15
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    26,    26,    30,    32,    34,    37,    40,    43,    46,
-      49,    50,    56,    58,    61,    62,    63,    64,    65,    66
+       0,    37,    37,    41,    44,    45,    49,    50,    54,    57,
+      60,    61,    62,    63,    64,    65,    66,    67,    71,    75,
+      76,    79,    83,    84,    85,    88,    89,    92,    94,    98,
+      99,   100,   101,   102,   103,   104,   106,   107,   108,   109,
+     110,   111,   112,   114,   115,   116,   117,   118
 };
 #endif
 
@@ -537,10 +545,13 @@ static const yytype_int8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "ASSIGN", "INT_VALUE", "CHAR_VALUE",
-  "REAL_VALUE", "BOOL_VALUE", "PROGR", "BGIN", "END", "IDENTIFIER", "TYPE",
-  "STRING_VALUE", "'.'", "';'", "':'", "$accept", "st", "name",
-  "declarations", "declaration", "statements", "statement", YY_NULLPTR
+  "$end", "error", "$undefined", "ASSIGN", "PROGR", "BGIN", "END",
+  "CONST", "FUNCTION", "IDENTIFIER", "TYPE", "STRING_VALUE", "CHAR_VALUE",
+  "BOOL_VALUE", "INT_VALUE", "REAL_VALUE", "'+'", "'-'", "'*'", "'.'",
+  "';'", "':'", "'{'", "'}'", "'('", "')'", "','", "'['", "']'", "$accept",
+  "st", "name", "declarations", "declaration", "var_declaration",
+  "function_declaration", "param", "block", "valoare_str", "dimensiune",
+  "statements", "statement", "list", "int_expr", YY_NULLPTR
 };
 #endif
 
@@ -550,11 +561,12 @@ static const char *const yytname[] =
 static const yytype_int16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,    46,    59,    58
+     265,   266,   267,   268,   269,   270,    43,    45,    42,    46,
+      59,    58,   123,   125,    40,    41,    44,    91,    93
 };
 # endif
 
-#define YYPACT_NINF (-9)
+#define YYPACT_NINF (-28)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -568,11 +580,18 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -7,    -5,     7,    -1,     2,    -9,    -8,    10,    -1,    -9,
-       6,    12,    -9,    -3,    17,    11,    12,     9,    -9,    -2,
-      13,    -9,    14,    15,    16,    18,    19,    20,    21,    22,
-      23,    24,    25,    -9,    -9,    -9,    -9,    -9,    -9,    -9,
-      -9,    -9,    -9,    -9,    -9
+      15,    21,    38,    16,    23,   -28,    48,    50,    51,    39,
+      16,   -28,   -28,   -28,    52,    62,    80,    83,   -28,    88,
+      96,     0,     4,   104,    83,     5,    90,    87,    22,   -28,
+      99,     1,     2,   111,    97,   -28,    36,   112,   107,    98,
+     -28,   -28,   -28,   -28,   100,    -2,   101,    60,    94,   102,
+     -28,   103,   105,   106,    71,    41,   -28,   108,   109,    79,
+     110,    92,   117,   -28,    46,   -28,    -2,    -2,    -2,   -28,
+     113,    55,   -28,   -28,   -28,   -28,   114,   115,    84,   -28,
+     -28,   -28,    55,   -28,   116,   -28,   119,   119,   -28,   124,
+     -28,   -28,    19,    91,   -28,   -28,   -28,    35,   125,   118,
+     121,    70,   122,    16,   -28,   -28,   -28,   -28,   -28,    91,
+     -28,   127,   123,   -28
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -580,23 +599,32 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     4,     0,     1,     0,     0,     4,     3,
-       0,    12,     5,     0,     0,     0,    12,     0,     6,     0,
-       0,    13,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     2,     7,     9,     8,    11,    10,    15,
-      16,    17,    19,    14,    18
+       0,     0,     0,     4,     0,     1,     0,     0,     0,     0,
+       4,     6,     7,     3,     0,     0,     0,    27,     5,     0,
+       0,     0,     0,     0,    27,     0,     0,     0,     0,     8,
+       0,     0,     0,     0,     0,    28,     0,     0,     0,     0,
+      24,    22,    23,    47,     0,     0,     0,     0,     0,     0,
+       9,     0,     0,     0,     0,     0,     2,     0,     0,     0,
+       0,    19,     0,    12,     0,    13,     0,     0,     0,    11,
+      25,    36,    29,    31,    32,    30,     0,     0,     0,    16,
+      17,    15,    36,    20,     0,    46,    43,    44,    45,     0,
+      38,    39,     0,    37,    35,    33,    34,     0,     0,     0,
+       0,     0,     0,     4,    18,    26,    10,    41,    42,    40,
+      14,     0,     0,    21
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -9,    -9,    -9,    33,    -9,     8,    -9
+     -28,   -28,   -28,   -10,   -28,   -28,   -28,   -28,   -28,   -26,
+      81,   120,   -28,    49,   -27
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     3,     7,     8,    15,    16
+      -1,     2,     3,     9,    10,    11,    12,    27,   104,    91,
+      31,    23,    24,    92,    93
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -604,45 +632,78 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      17,     1,    27,    28,    29,    30,     4,     5,    10,    31,
-       6,    32,    18,    22,    23,    24,    25,     9,    13,    11,
-      19,    20,    26,    14,    21,     0,     0,    33,     0,    34,
-      35,    36,     0,    37,    38,    39,    40,    41,    42,    43,
-      44,    12
+      18,    47,    46,    28,    49,    54,    53,    32,    36,    59,
+      58,    51,    43,    40,    41,    42,    43,    52,    64,     1,
+      29,    50,    45,     6,     7,     8,    45,    30,    78,    77,
+       4,    30,    30,    40,    41,    42,    43,    44,     5,    86,
+      87,    88,   100,    13,    17,   101,    45,    40,    41,    42,
+      43,    57,    40,    41,    42,    43,    76,    14,   102,    15,
+      45,   101,    66,    67,    68,    45,    40,    41,    42,    43,
+      90,    85,    16,    19,   109,   108,    66,    67,    68,    45,
+      69,    40,    41,    42,    43,   107,    20,    66,    67,    68,
+      21,    75,    22,   111,    45,    66,    67,    68,    25,    81,
+      66,    67,    68,    33,    96,    26,    37,    66,    67,    68,
+      34,    38,    39,    48,    55,    60,    56,    61,    83,    62,
+      63,    65,    70,    72,    71,    73,    74,    84,    79,    80,
+     103,    97,    82,   112,    94,    95,    98,    68,    99,     0,
+      89,   106,   110,   113,    35,     0,   105
 };
 
 static const yytype_int8 yycheck[] =
 {
-       3,     8,     4,     5,     6,     7,    11,     0,    16,    11,
-      11,    13,    15,     4,     5,     6,     7,    15,    12,     9,
-       3,    10,    13,    11,    16,    -1,    -1,    14,    -1,    15,
-      15,    15,    -1,    15,    15,    15,    15,    15,    15,    15,
-      15,     8
+      10,    28,    28,     3,     3,    32,    32,     3,     3,    36,
+      36,     9,    14,    11,    12,    13,    14,    15,    45,     4,
+      20,    20,    24,     7,     8,     9,    24,    27,    55,    55,
+       9,    27,    27,    11,    12,    13,    14,    15,     0,    66,
+      67,    68,    23,    20,     5,    26,    24,    11,    12,    13,
+      14,    15,    11,    12,    13,    14,    15,     9,    23,     9,
+      24,    26,    16,    17,    18,    24,    11,    12,    13,    14,
+      15,    25,    21,    21,   101,   101,    16,    17,    18,    24,
+      20,    11,    12,    13,    14,    15,    24,    16,    17,    18,
+      10,    20,     9,   103,    24,    16,    17,    18,    10,    20,
+      16,    17,    18,    22,    20,     9,    25,    16,    17,    18,
+       6,    21,    25,    14,     3,     3,    19,    10,    26,    21,
+      20,    20,    28,    20,    22,    20,    20,    10,    20,    20,
+       5,    82,    22,     6,    20,    20,    20,    18,    14,    -1,
+      27,    20,    20,    20,    24,    -1,    28
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     8,    18,    19,    11,     0,    11,    20,    21,    15,
-      16,     9,    20,    12,    11,    22,    23,     3,    15,     3,
-      10,    22,     4,     5,     6,     7,    13,     4,     5,     6,
-       7,    11,    13,    14,    15,    15,    15,    15,    15,    15,
-      15,    15,    15,    15,    15
+       0,     4,    30,    31,     9,     0,     7,     8,     9,    32,
+      33,    34,    35,    20,     9,     9,    21,     5,    32,    21,
+      24,    10,     9,    40,    41,    10,     9,    36,     3,    20,
+      27,    39,     3,    39,     6,    40,     3,    39,    21,    25,
+      11,    12,    13,    14,    15,    24,    38,    43,    14,     3,
+      20,     9,    15,    38,    43,     3,    19,    15,    38,    43,
+       3,    10,    21,    20,    43,    20,    16,    17,    18,    20,
+      28,    22,    20,    20,    20,    20,    15,    38,    43,    20,
+      20,    20,    22,    26,    10,    25,    43,    43,    43,    27,
+      15,    38,    42,    43,    20,    20,    20,    42,    20,    14,
+      23,    26,    23,     5,    37,    28,    20,    15,    38,    43,
+      20,    32,     6,    20
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    17,    18,    19,    20,    20,    21,    21,    21,    21,
-      21,    21,    22,    22,    23,    23,    23,    23,    23,    23
+       0,    29,    30,    31,    32,    32,    33,    33,    34,    34,
+      34,    34,    34,    34,    34,    34,    34,    34,    35,    36,
+      36,    37,    38,    38,    38,    39,    39,    40,    40,    41,
+      41,    41,    41,    41,    41,    41,    42,    42,    42,    42,
+      42,    42,    42,    43,    43,    43,    43,    43
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     6,     3,     0,     2,     4,     6,     6,     6,
-       6,     6,     0,     2,     4,     4,     4,     4,     4,     4
+       0,     2,     6,     3,     0,     2,     1,     1,     4,     5,
+       9,     6,     6,     6,    10,     7,     7,     7,     9,     3,
+       4,     4,     1,     1,     1,     3,     6,     0,     2,     4,
+       4,     4,     4,     5,     5,     5,     0,     1,     1,     1,
+       3,     3,     3,     3,     3,     3,     3,     1
 };
 
 
@@ -1338,60 +1399,131 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 26 "bumo.y"
-                                              {printf("The programme is correct!\n");}
-#line 1344 "bumo.tab.c"
-    break;
-
-  case 6:
 #line 37 "bumo.y"
-                            { if(!variabile.declareVariable((yyvsp[-3].str), (yyvsp[-1].str))){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-3].str));
-            exit(EXIT_FAILURE); }}
-#line 1352 "bumo.tab.c"
-    break;
-
-  case 7:
-#line 40 "bumo.y"
-                                                { if(!variabile.declareVariable((yyvsp[-5].str), (yyvsp[-3].str))){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-5].str));
-            exit(EXIT_FAILURE); }}
-#line 1360 "bumo.tab.c"
+                                             {printf("The programme is correct!\n");}
+#line 1405 "bumo.tab.c"
     break;
 
   case 8:
-#line 43 "bumo.y"
-                                                { if(!variabile.declareVariable((yyvsp[-5].str), (yyvsp[-3].str))){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-5].str));
+#line 54 "bumo.y"
+                            { if(!variabile.declareVariable((yyvsp[-3].str), (yyvsp[-1].str),false)){
+            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-3].str));
             exit(EXIT_FAILURE); }}
-#line 1368 "bumo.tab.c"
+#line 1413 "bumo.tab.c"
     break;
 
   case 9:
-#line 46 "bumo.y"
-                                                { if(!variabile.declareVariable((yyvsp[-5].str), (yyvsp[-3].str))){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-5].str));
+#line 57 "bumo.y"
+                                         { if(!variabile.declareVariable((yyvsp[-4].str), (yyvsp[-2].str),false)){
+            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-4].str));
             exit(EXIT_FAILURE); }}
-#line 1376 "bumo.tab.c"
-    break;
-
-  case 10:
-#line 49 "bumo.y"
-                                                  { checkVar((yyvsp[-5].str),(yyvsp[-3].str),(yyvsp[-1].str),yylineno); }
-#line 1382 "bumo.tab.c"
+#line 1421 "bumo.tab.c"
     break;
 
   case 11:
-#line 50 "bumo.y"
-                                                { if(!variabile.declareVariable((yyvsp[-5].str), (yyvsp[-3].str))){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, (yyvsp[-5].str));
-            exit(EXIT_FAILURE); 
-            }}
-#line 1391 "bumo.tab.c"
+#line 61 "bumo.y"
+                                               { checkVarDecl((yyvsp[-5].str),(yyvsp[-3].str),to_string((yyvsp[-1].intval)),false,yylineno); }
+#line 1427 "bumo.tab.c"
+    break;
+
+  case 12:
+#line 62 "bumo.y"
+                                                { checkVarDecl((yyvsp[-5].str),(yyvsp[-3].str),to_string((yyvsp[-1].ftval)),false,yylineno); }
+#line 1433 "bumo.tab.c"
+    break;
+
+  case 13:
+#line 63 "bumo.y"
+                                                 { checkVarDecl((yyvsp[-5].str),(yyvsp[-3].str),(yyvsp[-1].str),false,yylineno); }
+#line 1439 "bumo.tab.c"
+    break;
+
+  case 15:
+#line 65 "bumo.y"
+                                                     { checkVarDecl((yyvsp[-5].str),(yyvsp[-3].str),to_string((yyvsp[-1].intval)),true,yylineno); }
+#line 1445 "bumo.tab.c"
+    break;
+
+  case 16:
+#line 66 "bumo.y"
+                                                      { checkVarDecl((yyvsp[-5].str),(yyvsp[-3].str),to_string((yyvsp[-1].ftval)),true,yylineno); }
+#line 1451 "bumo.tab.c"
+    break;
+
+  case 17:
+#line 67 "bumo.y"
+                                                       { checkVarDecl((yyvsp[-5].str),(yyvsp[-3].str),(yyvsp[-1].str),true,yylineno); }
+#line 1457 "bumo.tab.c"
+    break;
+
+  case 22:
+#line 83 "bumo.y"
+                   {(yyval.str) = (yyvsp[0].str);}
+#line 1463 "bumo.tab.c"
+    break;
+
+  case 23:
+#line 84 "bumo.y"
+                    {(yyval.str) = (yyvsp[0].str);}
+#line 1469 "bumo.tab.c"
+    break;
+
+  case 24:
+#line 85 "bumo.y"
+                    {(yyval.str) = (yyvsp[0].str);}
+#line 1475 "bumo.tab.c"
+    break;
+
+  case 30:
+#line 99 "bumo.y"
+                                      {checkVarIsDecl((yyvsp[-3].str),to_string((yyvsp[-1].intval)),yylineno);}
+#line 1481 "bumo.tab.c"
+    break;
+
+  case 31:
+#line 100 "bumo.y"
+                                        {checkVarIsDecl((yyvsp[-3].str),to_string((yyvsp[-1].ftval)),yylineno);}
+#line 1487 "bumo.tab.c"
+    break;
+
+  case 32:
+#line 101 "bumo.y"
+                                         {checkVarIsDecl((yyvsp[-3].str),(yyvsp[-1].str),yylineno);}
+#line 1493 "bumo.tab.c"
+    break;
+
+  case 43:
+#line 114 "bumo.y"
+                                   {(yyval.intval) = (yyvsp[-2].intval) + (yyvsp[0].intval);}
+#line 1499 "bumo.tab.c"
+    break;
+
+  case 44:
+#line 115 "bumo.y"
+                            {(yyval.intval) = (yyvsp[-2].intval) - (yyvsp[0].intval);}
+#line 1505 "bumo.tab.c"
+    break;
+
+  case 45:
+#line 116 "bumo.y"
+                            {(yyval.intval) = (yyvsp[-2].intval) * (yyvsp[0].intval);}
+#line 1511 "bumo.tab.c"
+    break;
+
+  case 46:
+#line 117 "bumo.y"
+                      {(yyval.intval) = (yyvsp[-1].intval); }
+#line 1517 "bumo.tab.c"
+    break;
+
+  case 47:
+#line 118 "bumo.y"
+               {(yyval.intval) = (yyvsp[0].intval);}
+#line 1523 "bumo.tab.c"
     break;
 
 
-#line 1395 "bumo.tab.c"
+#line 1527 "bumo.tab.c"
 
       default: break;
     }
@@ -1623,18 +1755,31 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 69 "bumo.y"
+#line 121 "bumo.y"
 
 void yyerror(const char * s){
 printf("error: %s at line:%d\n",s,yylineno);
 }
 
-void checkVar(const string& name,const string& type,const string& value, int line){
-    if(!variabile.declareVariable(name, type)){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",line, name);
+void checkVarDecl(const string& name,const string& type,const string& value, bool ct,int line){
+    if(!variabile.declareVariable(name, type,ct)){
+            fprintf(stderr, "%d: Error: Variable %s is already defined\n",line, name.c_str());
             exit(EXIT_FAILURE); }
     if(!variabile.isCompatibleValue(type,value)){
-        fprintf(stderr, "%d: Error: Variable %s type is illegal\n",line, name);
+        fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),type.c_str());
+        exit(EXIT_FAILURE); 
+    }
+}
+void checkVarIsDecl(const string& name,const string& value, int line){
+    if(variabile.isConstant(name)){
+        fprintf(stderr, "%d: Error: Constant %s can't be changed\n",line, name.c_str());
+        exit(EXIT_FAILURE);
+    }
+    if(variabile.IsDeclareVariable(name,value)==3){
+        fprintf(stderr, "%d: Error: Variable %s is not defined\n",line, name.c_str());
+        exit(EXIT_FAILURE); }
+    else if(variabile.IsDeclareVariable(name,value)==2){
+        fprintf(stderr, "%d: Error: Invalid value for variable '%s'\n",line, name.c_str());
         exit(EXIT_FAILURE); 
     }
 }

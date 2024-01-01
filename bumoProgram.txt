@@ -1,9 +1,8 @@
 program BumoProject;
-i:integer := 0;
-a:string := '5';
-x:string := "aaa";
+i:boolean := true;
+a:integer[100] := {"asdf"};
+const x:integer := 2-3*5; 
 begin
-  i := a;
-  box:= false;
+  a[1] := 5;
 end.
   

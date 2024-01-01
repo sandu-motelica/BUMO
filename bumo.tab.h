@@ -50,16 +50,18 @@ extern int yydebug;
   enum yytokentype
   {
     ASSIGN = 258,
-    INT_VALUE = 259,
-    CHAR_VALUE = 260,
-    REAL_VALUE = 261,
-    BOOL_VALUE = 262,
-    PROGR = 263,
-    BGIN = 264,
-    END = 265,
-    IDENTIFIER = 266,
-    TYPE = 267,
-    STRING_VALUE = 268
+    PROGR = 259,
+    BGIN = 260,
+    END = 261,
+    CONST = 262,
+    FUNCTION = 263,
+    IDENTIFIER = 264,
+    TYPE = 265,
+    STRING_VALUE = 266,
+    CHAR_VALUE = 267,
+    BOOL_VALUE = 268,
+    INT_VALUE = 269,
+    REAL_VALUE = 270
   };
 #endif
 
@@ -67,13 +69,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 14 "bumo.y"
+#line 16 "bumo.y"
 
     char* str;
     int intval;
     float ftval;
 
-#line 77 "bumo.tab.h"
+#line 79 "bumo.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
