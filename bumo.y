@@ -8,7 +8,6 @@ extern char* yytext;
 extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
-string currentScope = "main";
 class VarList variabile;
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
@@ -21,12 +20,12 @@ bool toBool(const string& val);
     float ftval;
     bool bval;
 }
-%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR
+%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
 %type<str> valoare_str 
-%type<bval> bool_expr
+%type<bval> bool_expr relativ_expr 
 %type<intval> int_expr 
 %type<ftval> real_expr 
 // %type<bloc> funct
@@ -104,18 +103,29 @@ dimensiune:
 
 statements:
     /*empty*/
-    | statement statements
+    | statement statements 
+    | if_statement statements
     ;
 
 statement:
-    IDENTIFIER ASSIGN IDENTIFIER ';'   
+    IDENTIFIER ASSIGN IDENTIFIER ';'      
     | IDENTIFIER ASSIGN int_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
-    | IDENTIFIER ASSIGN REAL_VALUE ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
+    | IDENTIFIER ASSIGN real_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
+    | IDENTIFIER ASSIGN bool_expr ';'  {checkVarIsDecl($1,$3 ? "true" : "false",yylineno);}
     | IDENTIFIER ASSIGN valoare_str ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare_str ';' // verificare
     | IDENTIFIER dimensiune ASSIGN int_expr ';' // verificare
     | IDENTIFIER dimensiune ASSIGN real_expr ';'  // verificare   
      ;
+
+if_statement : IF '(' condition ')' THEN '{' statements '}'
+    | IF '(' condition ')' THEN '{' statements '}' ELSE '{' statements '}'
+    ;
+
+condition:
+    bool_expr;
+    | relativ_expr;
+
 list: // verificarea cazului cu virgula in plus
     | int_expr
     | REAL_VALUE
@@ -144,6 +154,16 @@ bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
   |  '(' bool_expr ')' {$$ = $2; }
   |  BOOL_VALUE {$$ = toBool($1);}
   ;
+relativ_expr : 
+    bool_expr EQ bool_expr {$$ = ($1 == $3);}
+    | bool_expr NQ bool_expr {$$ = ($1 != $3);}
+    | int_expr EQ int_expr {$$ = ($1 == $3);}
+    | int_expr NQ int_expr {$$ = ($1 != $3);}
+    | int_expr LE int_expr {$$ = ($1 <= $3);}
+    | int_expr GE int_expr {$$ = ($1 >= $3);}
+    | int_expr GT int_expr {$$ = ($1 > $3);}
+    | int_expr LT int_expr {$$ = ($1 > $3);}
+    ;
 %%
 void yyerror(const char * s){
 printf("error: %s at line:%d\n",s,yylineno);

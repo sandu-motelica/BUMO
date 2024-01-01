@@ -11,6 +11,9 @@
 "end" { return END; }
 "true"|"false" {yylval.str = strdup(yytext); return BOOL_VALUE;}
 "const" {return CONST;}
+"if" {return IF;}
+"else" {return ELSE;}
+"then" {return THEN;}
 [a-zA-Z][a-zA-Z0-9_]* {yylval.str = strdup(yytext); return IDENTIFIER;}
 ":=" {return ASSIGN;}
 0|[-]?[1-9][0-9]* {yylval.intval = atoi(yytext); return INT_VALUE;}
@@ -35,6 +38,13 @@
 "||" {return OR;}
 "&&" {return AND;}
 "!" {return NOT;}
+"==" {return EQ;}
+"!=" {return NQ;}
+"<=" {return LE;}
+">=" {return GE;}
+">" {return GT;}
+"<" {return LT;}
+
 "//".*          {}
 "/*".*"*/"      {}
 [ \t] ;
