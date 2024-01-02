@@ -20,12 +20,12 @@ bool toBool(const string& val);
     float ftval;
     bool bval;
 }
-%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE
+%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
 %type<str> valoare_str 
-%type<bval> bool_expr relativ_expr 
+%type<bval> bool_expr relativ_expr relativ_condition
 %type<intval> int_expr 
 %type<ftval> real_expr 
 // %type<bloc> funct
@@ -35,11 +35,10 @@ bool toBool(const string& val);
 %left NOT 
 %left AND 
 %left OR 
+%left EQ NQ GT LT LE GE
 
 %left ADD SUB  
 %left MUL DIV 
-
-
 
 
 %%
@@ -89,7 +88,7 @@ param: IDENTIFIER ':' TYPE    /* {$$.push_back(make_pair($1,$3))}*/
          | IDENTIFIER ':' TYPE ',' //param {$$.push_back(make_pair($1,$3))}
          ;
 block:
-    BGIN declarations END ';'
+    BGIN statements END ';'
     ;
 
 valoare_str:
@@ -101,15 +100,17 @@ dimensiune:
     | '[' INT_VALUE ']''[' INT_VALUE ']'
     ;
 
+
 statements:
     /*empty*/
     | statement statements 
     | if_statement statements
+    | for_statement statements
+    | while_statement statements
     ;
 
-statement:
-    IDENTIFIER ASSIGN IDENTIFIER ';'      
-    | IDENTIFIER ASSIGN int_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
+statement:     
+     IDENTIFIER ASSIGN int_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
     | IDENTIFIER ASSIGN real_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
     | IDENTIFIER ASSIGN bool_expr ';'  {checkVarIsDecl($1,$3 ? "true" : "false",yylineno);}
     | IDENTIFIER ASSIGN valoare_str ';'  {checkVarIsDecl($1,$3,yylineno);}
@@ -118,20 +119,38 @@ statement:
     | IDENTIFIER dimensiune ASSIGN real_expr ';'  // verificare   
      ;
 
+
+/******** control statements ******************/
+/*********************************************/
+
+
+
 if_statement : IF '(' condition ')' THEN '{' statements '}'
     | IF '(' condition ')' THEN '{' statements '}' ELSE '{' statements '}'
     ;
+for_statement :
+    FOR '(' IDENTIFIER ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' block
+    | FOR '(' IDENTIFIER ':' TYPE  ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' block
+    ;
+while_statement :
+    WHILE '('condition')' block
 
+expression:
+    bool_expr
+    | int_expr
+    | real_expr // le stocam ca string in expression
+    ;
 condition:
-    bool_expr;
-    | relativ_expr;
+    bool_expr
+    | relativ_condition
+    ;
 
 list: // verificarea cazului cu virgula in plus
     | int_expr
-    | REAL_VALUE
+    | real_expr
     | valoare_str
     | list ',' int_expr
-    | list ',' REAL_VALUE 
+    | list ',' real_expr
     | list ',' valoare_str
     ;
 int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
@@ -148,12 +167,15 @@ real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  '(' real_expr ')' {$$ = $2; }
   |  REAL_VALUE {$$ = $1;}
   ;
+
 bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
   |  bool_expr OR bool_expr  {$$ = $1 || $3;}
   |  NOT bool_expr  {$$ = !$2;}
   |  '(' bool_expr ')' {$$ = $2; }
-  |  BOOL_VALUE {$$ = toBool($1);}
+  |  BOOL_VALUE {$$ = toBool($1); }
+  |  IDENTIFIER {$$ = toBool($1);}
   ;
+
 relativ_expr : 
     bool_expr EQ bool_expr {$$ = ($1 == $3);}
     | bool_expr NQ bool_expr {$$ = ($1 != $3);}
@@ -164,6 +186,15 @@ relativ_expr :
     | int_expr GT int_expr {$$ = ($1 > $3);}
     | int_expr LT int_expr {$$ = ($1 > $3);}
     ;
+
+relativ_condition:
+    relativ_condition AND relativ_condition  {  $$ = $1 && $3;}
+    |  relativ_condition OR relativ_condition  {$$ = $1 || $3;}
+    |  NOT relativ_condition  {$$ = !$2;}
+    |  '(' relativ_condition ')' {$$ = $2; }
+    |  relativ_expr {$$ = $1; }
+    ;
+
 %%
 void yyerror(const char * s){
 printf("error: %s at line:%d\n",s,yylineno);

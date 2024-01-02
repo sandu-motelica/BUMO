@@ -8,7 +8,7 @@ struct Var {
     string type;
     string name;
     bool constant;
-    
+    string value;  
 };
 
 class VarList {

@@ -68,16 +68,18 @@ extern int yydebug;
     LT = 274,
     LE = 275,
     GE = 276,
-    IDENTIFIER = 277,
-    TYPE = 278,
-    STRING_VALUE = 279,
-    CHAR_VALUE = 280,
-    BOOL_VALUE = 281,
-    INT_VALUE = 282,
-    REAL_VALUE = 283,
-    SUB = 284,
-    MUL = 285,
-    DIV = 286
+    FOR = 277,
+    WHILE = 278,
+    IDENTIFIER = 279,
+    TYPE = 280,
+    STRING_VALUE = 281,
+    CHAR_VALUE = 282,
+    BOOL_VALUE = 283,
+    INT_VALUE = 284,
+    REAL_VALUE = 285,
+    SUB = 286,
+    MUL = 287,
+    DIV = 288
   };
 #endif
 
@@ -92,7 +94,7 @@ union YYSTYPE
     float ftval;
     bool bval;
 
-#line 96 "bumo.tab.h"
+#line 98 "bumo.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
