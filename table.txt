@@ -1,3 +1,6 @@
 ID       TIP       VAL        CONST
 i       boolean       true        false  
-x       integer       17        true  
+j       boolean       false        false  
+x       integer       17        false  
+b       integer       2        false  
+e       boolean       true        false  

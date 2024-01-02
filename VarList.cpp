@@ -74,14 +74,20 @@ bool VarList::isConstant(const string& name){
 }
 
 
-
-
 void VarList::assignValue(const string& name, const string& value){
     for (Var& v : vars) {
         if (name == v.name) {
             v.value = value;
         }
     }
+}
+string VarList::getValue(const string& name){
+    for (Var& v : vars) {
+        if (name == v.name) {
+            return v.value;
+        }
+    }
+    return "";
 }
 
 VarList::~VarList() {
