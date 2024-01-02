@@ -8,10 +8,15 @@ extern char* yytext;
 extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
+void createTable(const string& name,const string& type,const string& value, bool ct);
+void initTable();
+void clearTable();
 class VarList variabile;
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
 bool toBool(const string& val);
+
+#define FILE_NAME "table.txt"
 %}
 
 %union {
@@ -80,7 +85,7 @@ var_declaration:
     ;
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  block /*{  $$ = new VarList("main");
+    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  block  /*{  $$ = new VarList("main");
                                                             $$.addFunction($2,$7,$4); }*/
     ;
 
@@ -208,6 +213,7 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
         fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),type.c_str());
         exit(EXIT_FAILURE); 
     }
+    createTable(name,type, value,ct);
 }
 void checkVarIsDecl(const string& name,const string& value, int line){
     if(variabile.isConstant(name)){
@@ -227,7 +233,47 @@ bool toBool(const string& val){
     return false;
 }
 
+void createTable(const string& name,const string& type,const string& value, bool ct) {
+    FILE *file = fopen(FILE_NAME, "a");
+
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file.\n");
+    }
+
+    fprintf(file, "%s       %s       %s        %s  ", name.c_str(),type.c_str(),value.c_str(), ct ? "true" : "false");
+     fprintf(file, "\n");
+
+    // Close the file
+    fclose(file);
+
+}
+
+void initTable() {
+     FILE *file = fopen(FILE_NAME, "a");
+       if (file == NULL) {
+        fprintf(stderr, "Error opening file.\n");
+    }
+    fprintf(file, "ID       TIP       VAL        CONST");
+    fprintf(file, "\n");
+
+    // Close the file
+    fclose(file);
+}
+
+void clearTable() {
+     // Specify the file path
+
+    // Use the remove function to delete the file
+    if (remove(FILE_NAME) != 0) {
+        perror("Error deleting file");
+    }
+
+    printf("File %s deleted successfully.\n", FILE_NAME);
+}
+
 int main(int argc, char** argv){
+    clearTable();
+     initTable();
      yyin=fopen(argv[1],"r");
      yyparse();    
 } 

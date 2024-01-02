@@ -8,6 +8,7 @@ struct Var {
     string type;
     string name;
     bool constant;
+    string scope;
     string value;  
 };
 
