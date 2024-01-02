@@ -8,7 +8,6 @@ extern char* yytext;
 extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
-void createTable(const string& name,const string& type,const string& value, bool ct);
 void initTable();
 void clearTable();
 class VarList variabile;
@@ -235,7 +234,6 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
         exit(EXIT_FAILURE); 
     }
     variabile.assignValue(name,value);
-    createTable(name,type, value,ct);
 }
 void checkVarIsDecl(const string& name,const string& value, int line){
     if(variabile.isConstant(name)){
@@ -262,20 +260,7 @@ bool toBool(const string& val){
     return false;
 }
 
-void createTable(const string& name,const string& type,const string& value, bool ct) {
-    FILE *file = fopen(FILE_NAME, "a");
 
-    if (file == NULL) {
-        fprintf(stderr, "Error opening file.\n");
-    }
-
-    fprintf(file, "%s       %s       %s        %s  ", name.c_str(),type.c_str(),value.c_str(), ct ? "true" : "false");
-     fprintf(file, "\n");
-
-    // Close the file
-    fclose(file);
-
-}
 
 void initTable() {
      FILE *file = fopen(FILE_NAME, "a");
@@ -305,4 +290,5 @@ int main(int argc, char** argv){
      initTable();
      yyin=fopen(argv[1],"r");
      yyparse();    
+     variabile.addVarToTable();
 } 

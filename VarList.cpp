@@ -90,6 +90,25 @@ string VarList::getValue(const string& name){
     return "";
 }
 
+void VarList::addVarToTable(){
+     FILE *file = fopen("table.txt", "a");
+
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file.\n");
+    }
+
+ for (Var& v : vars) {
+        fprintf(file, "%s       %s       %s        %s  ", v.name.c_str(),v.type.c_str(),v.value.c_str(), v.constant ? "true" : "false");
+     fprintf(file, "\n");
+    }
+
+  
+
+    // Close the file
+    fclose(file);
+}
+
+
 VarList::~VarList() {
     vars.clear();
 }
