@@ -11,9 +11,11 @@ void yyerror(const char * s);
 void initTable();
 void clearTable();
 class VarList variabile;
-void checkVarDecl(const string& name,const string& type,const string& value, bool ct, int line);
+void checkVarDecl(const string& name,const string& type,const string& value, bool ct,const string& scope, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
 bool toBool(const string& val);
+
+string scope = "main";
 
 #define FILE_NAME "table.txt"
 %}
@@ -28,7 +30,7 @@ bool toBool(const string& val);
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
-%type<str> valoare_str 
+%type<str> valoare_str param
 %type<bval> bool_expr relativ_expr relativ_condition
 %type<intval> int_expr 
 %type<ftval> real_expr 
@@ -48,7 +50,7 @@ bool toBool(const string& val);
 %%
 
 st:
-    name declarations BGIN statements END '.'{printf("The programme is correct!\n");}
+    name declarations BGIN statements END '.'{scope="main";printf("The programme is correct!\n");}
     ;
 
 name:
@@ -65,32 +67,42 @@ declaration:
     ;
 
 var_declaration:
-    IDENTIFIER ':' TYPE ';' { if(!variabile.declareVariable($1, $3,false)){
+    IDENTIFIER ':' TYPE ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
-    | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false)){
+    | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
     | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
-    | IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($1,$3,to_string($5),false,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($1,$3,to_string($5),false,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($1,$3,$5,false,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($1,$3,$5 ? "true" : "false",false,yylineno); }
+    | IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($1,$3,to_string($5),false,scope,yylineno); }
+    | IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($1,$3,to_string($5),false,scope,yylineno); }
+    | IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($1,$3,$5,false,scope,yylineno); }
+    | IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($1,$3,$5 ? "true" : "false",false,scope,yylineno); }
     | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
-    | CONST IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($2,$4,to_string($6),true,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($2,$4,to_string($6),true,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($2,$4,$6,true,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($2,$4,$6 ? "true" : "false",true,yylineno); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($2,$4,to_string($6),true,scope,yylineno); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($2,$4,to_string($6),true,scope,yylineno); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($2,$4,$6,true,scope,yylineno); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($2,$4,$6 ? "true" : "false",true,scope,yylineno); }
     ;
 
+    
+
+
+
 function_declaration:
-    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  block  /*{  $$ = new VarList("main");
+    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  block {
+        variabile.addScope($2);
+    }  /*{  $$ = new VarList("main");
                                                             $$.addFunction($2,$7,$4); }*/
     ;
 
-param: IDENTIFIER ':' TYPE    /* {$$.push_back(make_pair($1,$3))}*/
+        param: IDENTIFIER ':' TYPE   {printf("%s", $$); if(!variabile.declareVariable($1, $3,false,"null")){
+            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
+            exit(EXIT_FAILURE); }} /* {$$.push_back(make_pair($1,$3))}*/
          | IDENTIFIER ':' TYPE ',' //param {$$.push_back(make_pair($1,$3))}
          ;
+
+
 block:
     BGIN statements END ';'
     ;
@@ -204,8 +216,8 @@ void yyerror(const char * s){
 printf("error: %s at line:%d\n",s,yylineno);
 }
 
-void checkVarDecl(const string& name,const string& type,const string& value, bool ct,int line){
-    if(!variabile.declareVariable(name, type,ct)){
+void checkVarDecl(const string& name,const string& type,const string& value, bool ct, const string& scope,int line){
+    if(!variabile.declareVariable(name, type,ct,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",line, name.c_str());
             exit(EXIT_FAILURE); }
     if(!variabile.isCompatibleValue(type,value)){
@@ -263,5 +275,6 @@ int main(int argc, char** argv){
      initTable();
      yyin=fopen(argv[1],"r");
      yyparse();    
+     printf("%s",scope.c_str());
      variabile.addVarToTable();
 } 

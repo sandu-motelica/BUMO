@@ -2,7 +2,17 @@ program BumoProject;
 i:boolean := true;
 a:integer[100] := {"asdf"};
 const x:integer := 2+3*5;
+z:integer:=1;
 e:boolean; 
+function test(l:integer):integer
+begin
+
+end;
+
+function test2(r:integer):integer
+begin
+
+end;
 
 begin
   

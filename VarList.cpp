@@ -2,13 +2,13 @@
 using namespace std;
 
 
-bool VarList::declareVariable(const string& name,const string& type, bool ct){
+bool VarList::declareVariable(const string& name,const string& type, bool ct, const string& scope){
     for(const Var& v: vars){
         if(name == v.name) {
             return false;
         }
     }
-    Var i = {type,name,ct};
+    Var i = {type,name,ct,scope};
     vars.push_back(i); 
     
     return true;  
@@ -92,16 +92,20 @@ void VarList::addVarToTable(){
     }
 
  for (Var& v : vars) {
-        fprintf(file, "%s       %s       %s        %s  ", v.name.c_str(),v.type.c_str(),v.value.c_str(), v.constant ? "true" : "false");
+        fprintf(file, "%s       %s       %s        %s       %s", v.name.c_str(),v.type.c_str(),v.value.c_str(), v.constant ? "true" : "false", v.scope.c_str());
      fprintf(file, "\n");
     }
-
-  
-
-    // Close the file
     fclose(file);
 }
 
+
+void VarList::addScope(const string& scope){
+       for (Var& v : vars) {
+        if (v.scope=="null") {
+            v.scope = scope;
+        }
+    }
+}
 
 VarList::~VarList() {
     vars.clear();

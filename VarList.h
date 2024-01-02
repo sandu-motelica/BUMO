@@ -17,11 +17,12 @@ class VarList {
     vector<Var> vars;
    
     public:
-    bool declareVariable(const string& name,const string& type,bool constant);
+    bool declareVariable(const string& name,const string& type,bool constant,const string& scope);
     bool isCompatibleValue(const string& type, const string& value);
     int IsDeclareVariable(const string& name, const string& value);
     void assignValue(const string& name, const string& value);
     void addVarToTable();
+    void addScope(const string& scope);
     bool isConstant(const string& name);
     ~VarList();
 };

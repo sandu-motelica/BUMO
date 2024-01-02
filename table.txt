@@ -1,4 +1,7 @@
 ID       TIP       VAL        CONST
-i       boolean       true        false  
-x       integer       17        true  
-e       boolean               false  
+i       boolean       true        false       main
+x       integer       17        true       main
+z       integer       1        false       main
+e       boolean               false       main
+l       integer               false       test
+r       integer               false       test2
