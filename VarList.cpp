@@ -76,22 +76,12 @@ bool VarList::isConstant(const string& name){
 
 
 
-bool VarList::assignValue(const string& name, const string& value){
+void VarList::assignValue(const string& name, const string& value){
     for (Var& v : vars) {
         if (name == v.name) {
-            if (isCompatibleValue(v.type, value)) {
-                // Atribuie valoarea
-                // cout << "Variable " << name << " assigned value " << value << endl;
-                return true;
-            } else {
-                cerr << "Incompatible value for variable " << name << " with type " << v.type << endl;
-                return false;
-            }
+            v.value = value;
         }
     }
-
-    cerr << "Variable " << name << " not declared!" << endl;
-    return false;
 }
 
 VarList::~VarList() {

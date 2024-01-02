@@ -20,7 +20,7 @@ class VarList {
     bool declareVariable(const string& name,const string& type,bool constant);
     bool isCompatibleValue(const string& type, const string& value);
     int IsDeclareVariable(const string& name, const string& value);
-    bool assignValue(const string& name, const string& value);
+    void assignValue(const string& name, const string& value);
     bool isConstant(const string& name);
     ~VarList();
 };

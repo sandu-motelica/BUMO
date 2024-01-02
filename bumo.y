@@ -213,6 +213,7 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
         fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),type.c_str());
         exit(EXIT_FAILURE); 
     }
+    variable.assignValue(name,value);
     createTable(name,type, value,ct);
 }
 void checkVarIsDecl(const string& name,const string& value, int line){
@@ -227,6 +228,7 @@ void checkVarIsDecl(const string& name,const string& value, int line){
         fprintf(stderr, "%d: Error: Invalid value for variable '%s'\n",line, name.c_str());
         exit(EXIT_FAILURE); 
     }
+    variable.assignValue(name,value);
 }
 bool toBool(const string& val){
     if(val == "true") return true;

@@ -1,4 +1,3 @@
 ID       TIP       VAL        CONST
 i       boolean       true        false  
 x       integer       17        true  
-l       integer       2        false  
