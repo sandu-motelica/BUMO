@@ -1,10 +1,15 @@
 program BumoProject;
 i:boolean := true;
 a:integer[100] := {"asdf"};
-x:integer := 2+3*5; 
+const x:integer := 2+3*5; 
+function testx( x:integer ):integer
+begin
+l:integer:=2;
+x:integer:=2;
+end;
 begin
   a[1] := 5;
-  if(3<4+2) then {x := 12;}
-  else{ }
+  //if(3<4+2) then {x := 12;}
+  //else{ }
 end.
   
