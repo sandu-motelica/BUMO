@@ -164,13 +164,13 @@ int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
   |  int_expr DIV int_expr  {$$ = $1 / $3;}
   |  '(' int_expr ')' {$$ = $2; }
   |  INT_VALUE {$$ = $1;}
-  |  IDENTIFIER {string  temp = variabile.getValue($1);
-                 if(!variabile.isCompatibleValue("integer",temp)){
-                        fprintf(stderr, "%d: Error: Variable '%s' is not of integer type\n",yylineno, $1);
-                         exit(EXIT_FAILURE);
-                 } 
-                 $$ = stoi(temp); 
-                 }
+//   |  IDENTIFIER {string  temp = variabile.getValue($1);
+//                  if(!variabile.isCompatibleValue("integer",temp)){
+//                         fprintf(stderr, "%d: Error: Variable '%s' is not of integer type\n",yylineno, $1);
+//                          exit(EXIT_FAILURE);
+//                  } 
+//                  $$ = stoi(temp); 
+//                  }
   ;
 real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  real_expr SUB real_expr  {$$ = $1 - $3;}
@@ -178,13 +178,13 @@ real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  real_expr DIV real_expr  {$$ = $1 / $3;}
   |  '(' real_expr ')' {$$ = $2; }
   |  REAL_VALUE {$$ = $1;}
-//   |  IDENTIFIER { string  temp = variabile.getValue($1);
-//                  if(!variabile.isCompatibleValue("real",temp)){
-//                         fprintf(stderr, "%d: Error: Variable '%s' is not of real type\n",yylineno, $1);
-//                          exit(EXIT_FAILURE);
-//                  } 
-//                  $$ = stod(temp); 
-//                  }
+  |  IDENTIFIER { string  temp = variabile.getValue($1);
+                 if(!variabile.isCompatibleValue("real",temp)){
+                        fprintf(stderr, "%d: Error: Variable '%s' is not of real type\n",yylineno, $1);
+                         exit(EXIT_FAILURE);
+                 } 
+                 $$ = stod(temp); 
+                 }
   ;
 
 bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
