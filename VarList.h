@@ -21,6 +21,7 @@ class VarList {
     bool isCompatibleValue(const string& type, const string& value);
     int IsDeclareVariable(const string& name, const string& value);
     void assignValue(const string& name, const string& value);
+    void addVarToTable();
     bool isConstant(const string& name);
     ~VarList();
 };

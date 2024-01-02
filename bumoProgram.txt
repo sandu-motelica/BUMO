@@ -5,17 +5,6 @@ const x:integer := 2+3*5;
 e:boolean; 
 
 begin
-  a[1] := 5;
-  if((4==4 || 4<2) && 4==2) then {x := 12;}
-  else{ }
-  for(aux:integer:=1+3;1<3;i:=4+1)
-  begin
-    e:= false;
-  end;
-
-  while(true)
-  begin
-    i:=a;
-  end;
+  
 end.
   
