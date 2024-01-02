@@ -14,6 +14,7 @@ class VarList variabile;
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct,const string& scope, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
 bool toBool(const string& val);
+int verifBool(const string& val);
 
 string scope = "main";
 
@@ -136,8 +137,8 @@ statement:
      ;
 
 
-/******** control statements ******************/
-/*********************************************/
+/******** control statements *********/
+/************************************/
 
 
 
@@ -175,6 +176,13 @@ int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
   |  int_expr DIV int_expr  {$$ = $1 / $3;}
   |  '(' int_expr ')' {$$ = $2; }
   |  INT_VALUE {$$ = $1;}
+//   |  IDENTIFIER {string  temp = variabile.getValue($1);
+//                  if(!variabile.isCompatibleValue("integer",temp)){
+//                         fprintf(stderr, "%d: Error: Variable '%s' is not of integer type\n",yylineno, $1);
+//                          exit(EXIT_FAILURE);
+//                  } 
+//                  $$ = stoi(temp); 
+//                  }
   ;
 real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  real_expr SUB real_expr  {$$ = $1 - $3;}
@@ -182,6 +190,13 @@ real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  real_expr DIV real_expr  {$$ = $1 / $3;}
   |  '(' real_expr ')' {$$ = $2; }
   |  REAL_VALUE {$$ = $1;}
+  |  IDENTIFIER { string  temp = variabile.getValue($1);
+                 if(!variabile.isCompatibleValue("real",temp)){
+                        fprintf(stderr, "%d: Error: Variable '%s' is not of real type\n",yylineno, $1);
+                         exit(EXIT_FAILURE);
+                 } 
+                 $$ = stod(temp); 
+                 }
   ;
 
 bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
@@ -189,7 +204,13 @@ bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
   |  NOT bool_expr  {$$ = !$2;}
   |  '(' bool_expr ')' {$$ = $2; }
   |  BOOL_VALUE {$$ = toBool($1); }
-  |  IDENTIFIER {$$ = toBool($1);}
+  |  IDENTIFIER { string temp = variabile.getValue($1);
+                    if(verifBool(temp)!=3){
+                         $$=toBool(temp);
+                    } else { fprintf(stderr, "%d: Error: Variable '%s' is not of boolean type\n",yylineno, $1);
+                        exit(EXIT_FAILURE);
+                    }
+                }
   ;
 
 relativ_expr : 
@@ -239,6 +260,12 @@ void checkVarIsDecl(const string& name,const string& value, int line){
         exit(EXIT_FAILURE); 
     }
     variabile.assignValue(name,value);
+}
+
+int verifBool(const string& val){
+    if(val == "true") return 1;
+    else if(val=="false") return 2;
+    return 3;
 }
 bool toBool(const string& val){
     if(val == "true") return true;
