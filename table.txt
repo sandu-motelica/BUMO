@@ -4,5 +4,6 @@ j       boolean       false        false       main
 z       integer       1        false       main
 e       boolean               false       main
 count       real               false       test
+leg       integer               false       test
 gig       string       "antonio"        false       main
 r       integer               false       test2

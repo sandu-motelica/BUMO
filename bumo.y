@@ -31,7 +31,7 @@ string scope = "main";
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
-%type<str> valoare_str param
+%type<str> valoare_str
 %type<bval> bool_expr relativ_expr relativ_condition
 %type<intval> int_expr 
 %type<ftval> real_expr 
@@ -105,12 +105,16 @@ function_declaration:
     ;
 
 param: 
-    IDENTIFIER ':' TYPE  { printf("%s\n", $$); 
+    IDENTIFIER ':' TYPE  { printf("%s\n", $1); 
                               if(!variabile.declareVariable($1, $3,false,"null")){
                                 fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
                                 exit(EXIT_FAILURE); }
                             } 
-    | IDENTIFIER ':' TYPE ',' param
+    | IDENTIFIER ':' TYPE ',' param { printf("%s\n", $1); 
+                              if(!variabile.declareVariable($1, $3,false,"null")){
+                                fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
+                                exit(EXIT_FAILURE); }
+                            } 
     ;
 
 
