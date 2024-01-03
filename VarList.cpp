@@ -73,6 +73,14 @@ bool VarList::isConstant(const string& name){
     return false;
 }
 
+bool VarList::existsVar(const string& name){
+    for(const Var& v: vars){
+        if(name == v.name) {
+            return true;
+        }
+    }
+    return false; 
+}
 
 void VarList::assignValue(const string& name, const string& value){
     for (Var& v : vars) {
@@ -85,6 +93,14 @@ string VarList::getValue(const string& name){
     for (Var& v : vars) {
         if (name == v.name) {
             return v.value;
+        }
+    }
+    return "";
+}
+string VarList::getType(const string& name){
+    for (Var& v : vars) {
+        if (name == v.name) {
+            return v.type;
         }
     }
     return "";

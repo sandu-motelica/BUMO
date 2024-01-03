@@ -23,15 +23,17 @@ string scope = "main";
 
 %union {
     char* str;
+    const char* strconst;
     int intval;
     float ftval;
     bool bval;
 }
-%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE
+%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE EVAL TYPEOF
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
-%type<str> valoare_str
+%type<str> valoare_str 
+%type<strconst> eval_function tpof_function
 %type<bval> bool_expr relativ_expr relativ_condition
 %type<intval> int_expr 
 %type<ftval> real_expr 
@@ -105,7 +107,7 @@ function_declaration:
     ;
 
 param: 
-    IDENTIFIER ':' TYPE  { printf("%s\n", $1); 
+    IDENTIFIER ':' TYPE     { printf("%s\n", $1); 
                               if(!variabile.declareVariable($1, $3,false,"null")){
                                 fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
                                 exit(EXIT_FAILURE); }
@@ -144,6 +146,29 @@ statement:
     | IDENTIFIER dimensiune ASSIGN int_expr ';' // verificare
     | IDENTIFIER dimensiune ASSIGN real_expr ';'  // verificare   
     ;
+
+eval_function:
+    EVAL '(' int_expr ')'   { $$ = to_string($3).c_str();  }
+    | EVAL '(' real_expr ')' { $$ = to_string($3).c_str(); }
+    | EVAL '(' bool_expr ')'  { $$ = $3 ? "true" : "false"; }
+    | EVAL '('IDENTIFIER')'   { if(!variabile.existsVar($3)){
+                                    fprintf(stderr, "%d: Error: Variable %s is not defined\n",yylineno, $3);
+                                    exit(EXIT_FAILURE); }
+                                $$ = variabile.getValue($3).c_str();
+                                }
+    ; // va trebui sa implementez int real si bool expresiile aparte (care sa nu contina identificator)
+
+tpof_function:
+    TYPEOF '(' int_expr ')'   {  $$ = "integer";}
+    | TYPEOF '(' real_expr ')' { $$ = "real"; }
+    | TYPEOF '(' bool_expr ')'  { $$ = "boolean"; }
+    | TYPEOF '('IDENTIFIER')'   { if(!variabile.existsVar($3)){
+                                    fprintf(stderr, "%d: Error: Variable %s is not defined\n",yylineno, $3);
+                                    exit(EXIT_FAILURE); }
+                                 $$ = variabile.getType($3).c_str();
+                                }
+    ; // va trebui sa implementez int real si bool expresiile aparte (care sa nu contina identificator)
+
 
 
 /************** control statements ****************/
@@ -188,6 +213,12 @@ dimensiune:
 valoare_str:
     CHAR_VALUE    {$$ = $1;}
     | STRING_VALUE  {$$ = $1;}
+    | tpof_function { 
+                      char temp[16]; 
+                      snprintf(temp,sizeof(temp),"\"%s\"",$1);
+                      $$ = strdup(temp);
+                    }
+    | eval_function {$$ = strdup($1);}
     ;
 
 expression:
@@ -216,13 +247,13 @@ real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  real_expr DIV real_expr  {$$ = $1 / $3;}
   |  '(' real_expr ')' {$$ = $2; }
   |  REAL_VALUE {$$ = $1;}
-  |  IDENTIFIER { string  temp = variabile.getValue($1);
-                 if(!variabile.isCompatibleValue("real",temp)){
-                        fprintf(stderr, "%d: Error: Variable '%s' is not of real type\n",yylineno, $1);
-                         exit(EXIT_FAILURE);
-                 } 
-                 $$ = stod(temp); 
-                 }
+//   |  IDENTIFIER { string  temp = variabile.getValue($1);
+//                  if(!variabile.isCompatibleValue("real",temp)){
+//                         fprintf(stderr, "%d: Error: Variable '%s' is not of real type\n",yylineno, $1);
+//                          exit(EXIT_FAILURE);
+//                  } 
+//                  $$ = stod(temp); 
+//                  }
   ;
 
 bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
@@ -230,13 +261,13 @@ bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
   |  NOT bool_expr  {$$ = !$2;}
   |  '(' bool_expr ')' {$$ = $2; }
   |  BOOL_VALUE {$$ = toBool($1); }
-  |  IDENTIFIER { string temp = variabile.getValue($1);
-                    if(verifBool(temp)!=3){
-                         $$=toBool(temp);
-                    } else { fprintf(stderr, "%d: Error: Variable '%s' is not of boolean type\n",yylineno, $1);
-                        exit(EXIT_FAILURE);
-                    }
-                }
+//   |  IDENTIFIER { string temp = variabile.getValue($1);
+//                     if(verifBool(temp)!=3){
+//                          $$=toBool(temp);
+//                     } else { fprintf(stderr, "%d: Error: Variable '%s' is not of boolean type\n",yylineno, $1);
+//                         exit(EXIT_FAILURE);
+//                     }
+//                 }
   ;
 
 relativ_expr : 
@@ -247,7 +278,7 @@ relativ_expr :
     | int_expr LE int_expr {$$ = ($1 <= $3);}
     | int_expr GE int_expr {$$ = ($1 >= $3);}
     | int_expr GT int_expr {$$ = ($1 > $3);}
-    | int_expr LT int_expr {$$ = ($1 > $3);}
+    | int_expr LT int_expr {$$ = ($1 < $3);}
     ;
 
 relativ_condition:

@@ -23,7 +23,9 @@ class VarList {
     void assignValue(const string& name, const string& value);
     void addVarToTable();
     void addScope(const string& scope);
+    bool existsVar(const string& name);
     string getValue(const string& name);
+    string getType(const string& name);
     bool isConstant(const string& name);
     ~VarList();
 };

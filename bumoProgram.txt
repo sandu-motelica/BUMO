@@ -1,9 +1,9 @@
 program BumoProject;
 
 i:boolean := true;
-j:boolean := false;
-a:integer[100] := {"asdf"};
+a:string := "asdf";
 z:integer:=1;
+zuma:integer:=23;
 e:boolean; 
 function test(leg:integer,count:real):integer
   gig:string:="antonio";
@@ -20,7 +20,8 @@ begin
   begin
     
   end;
-
+  z:=Eval(zuma);
+  a:=TypeOf(true || false);
   while(true)
   begin
   end;

@@ -1,7 +1,8 @@
 ID       TIP       VAL        CONST          SCOPE
 i       boolean       true        false       main
-j       boolean       false        false       main
-z       integer       1        false       main
+a       string       "boolean"        false       main
+z       integer       23        false       main
+zuma       integer       23        false       main
 e       boolean               false       main
 count       real               false       test
 leg       integer               false       test
