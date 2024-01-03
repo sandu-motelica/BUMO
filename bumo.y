@@ -61,7 +61,7 @@ name:
     PROGR IDENTIFIER ';'
     ;
 
-function_block:
+function_block: 
     declaration_block BGIN statements_block END 
     ;
 
@@ -101,17 +101,19 @@ var_declaration:
 
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  function_block ';' {  variabile.addScope($2); }  
+    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  function_block ';' {  variabile.addScope($2); { if(!variabile.declareFunc($2, $7,"main")){
+            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $2);
+            exit(EXIT_FAILURE); }}}  
     ;
 
 param: 
     IDENTIFIER ':' TYPE  { printf("%s\n", $1); 
-                              if(!variabile.declareVariable($1, $3,false,"null")){
+                              if(!variabile.declareVariable($1, $3,false,"func_param")){
                                 fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
                                 exit(EXIT_FAILURE); }
                             } 
     | IDENTIFIER ':' TYPE ',' param { printf("%s\n", $1); 
-                              if(!variabile.declareVariable($1, $3,false,"null")){
+                              if(!variabile.declareVariable($1, $3,false,"func_param")){
                                 fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
                                 exit(EXIT_FAILURE); }
                             } 
@@ -305,7 +307,9 @@ void initTable() {
        if (file == NULL) {
         fprintf(stderr, "Error opening file.\n");
     }
-    fprintf(file, "ID       TIP       VAL        CONST          SCOPE");
+    fprintf(file, 
+    "%-20s       %-20s      %-20s        %-20s            %-20s             %-20s %-20s",
+    "ID",                 "TIP",       "VAL",              "SCOPE ",             "Location"    ,          "Var Type", "Function params");
     fprintf(file, "\n");
 
     // Close the file
