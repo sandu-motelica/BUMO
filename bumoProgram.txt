@@ -5,6 +5,7 @@ a:string := "asdf";
 z:integer:=1;
 zuma:integer:=23;
 e:boolean; 
+const e:boolean := true; 
 function test(leg:integer,count:real):integer
   gig:string:="antonio";
 begin

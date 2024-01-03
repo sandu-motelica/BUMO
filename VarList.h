@@ -5,10 +5,12 @@
 using namespace std;
 
 struct Var {
-    string type;
+    string var_type;//var | func | class
+    string type;//int | string | floar | boolean
     string name;
     bool constant;
     string scope;
+    string location_type;
     string value;  
 };
 
@@ -18,6 +20,7 @@ class VarList {
    
     public:
     bool declareVariable(const string& name,const string& type,bool constant,const string& scope);
+    bool declareFunc(const string& name,const string& type,const string& scope);
     bool isCompatibleValue(const string& type, const string& value);
     int IsDeclareVariable(const string& name, const string& value);
     void assignValue(const string& name, const string& value);

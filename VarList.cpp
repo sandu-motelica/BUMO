@@ -8,7 +8,8 @@ bool VarList::declareVariable(const string& name,const string& type, bool ct, co
             return false;
         }
     }
-    Var i = {type,name,ct,scope};
+    string location_type = scope=="main" ? "global" : scope;
+    Var i = {"var",type,name,ct,scope,location_type};
     vars.push_back(i); 
     
     return true;  
@@ -114,22 +115,51 @@ void VarList::addVarToTable(){
     }
 
  for (Var& v : vars) {
-        fprintf(file, "%s       %s       %s        %s       %s", v.name.c_str(),v.type.c_str(),v.value.c_str(), v.constant ? "true" : "false", v.scope.c_str());
-     fprintf(file, "\n");
+    if(v.location_type!="func_param") {
+        fprintf(file, "%-20s          %-20s        %-20s       %-20s         %-20s             %-20s", 
+        v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+        //Print function params
+
+ for (Var& param : vars) {
+    if(param.location_type=="func_param" && param.scope==v.name) {
+        fprintf(file, "%s:%s ", 
+        param.name.c_str(), param.type.c_str()
+        );
+        //Print function params
+    
+    }
+    }
+        fprintf(file, "\n");
+    }
     }
     fclose(file);
 }
 
 
+
+
+
 void VarList::addScope(const string& scope){
        for (Var& v : vars) {
-        if (v.scope=="null") {
+        if (v.scope=="func_param") {
             v.scope = scope;
         }
     }
 }
 
+bool VarList::declareFunc(const string& name,const string& type,const string& scope){
+    for(const Var& v: vars){
+        if(name == v.name) {
+            return false;
+        }
+    }
+    string location_type = scope=="main" ? "global" : scope;
+    Var i = {"function",type,name,false,scope,"location_type"};//update location_type (class implementation)
+    vars.push_back(i); 
+    
+    return true;  
+}
+
 VarList::~VarList() {
     vars.clear();
 }
-
