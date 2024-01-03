@@ -37,7 +37,7 @@ string scope = "main";
 %type<ftval> real_expr 
 // %type<bloc> funct
 // %type<param_type> 
-%start st
+%start start
 
 %left NOT 
 %left AND 
@@ -50,15 +50,28 @@ string scope = "main";
 
 %%
 
-st:
-    name declarations BGIN statements END '.'{scope="main";printf("The programme is correct!\n");}
+/***************** GENERAL RULES ******************/
+/*************************************************/
+
+start:
+    name function_block '.' { scope="main"; printf("The programme is correct!\n");}
     ;
 
 name:
     PROGR IDENTIFIER ';'
     ;
+
+function_block:
+    declaration_block BGIN statements_block END 
+    ;
+
+declaration_block :
     /*empty*/
-declarations:   //{  $$ = new VarList(""); }
+    | declarations
+    ;
+
+declarations:
+    declaration
     | declaration declarations
     ;
 
@@ -86,40 +99,32 @@ var_declaration:
     | CONST IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($2,$4,$6 ? "true" : "false",true,scope,yylineno); }
     ;
 
-    
-
-
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  block {
-        variabile.addScope($2);
-    }  /*{  $$ = new VarList("main");
-                                                            $$.addFunction($2,$7,$4); }*/
+    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  function_block ';' {  variabile.addScope($2); }  
     ;
 
-        param: IDENTIFIER ':' TYPE   {printf("%s", $$); if(!variabile.declareVariable($1, $3,false,"null")){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
-            exit(EXIT_FAILURE); }} /* {$$.push_back(make_pair($1,$3))}*/
-         | IDENTIFIER ':' TYPE ',' //param {$$.push_back(make_pair($1,$3))}
-         ;
-
-
-block:
-    BGIN statements END ';'
-    ;
-
-valoare_str:
-     CHAR_VALUE    {$$ = $1;}
-    | STRING_VALUE  {$$ = $1;}
-    ;
-dimensiune:
-    '[' INT_VALUE ']'
-    | '[' INT_VALUE ']''[' INT_VALUE ']'
+param: 
+    IDENTIFIER ':' TYPE  { printf("%s\n", $$); 
+                              if(!variabile.declareVariable($1, $3,false,"null")){
+                                fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
+                                exit(EXIT_FAILURE); }
+                            } 
+    | IDENTIFIER ':' TYPE ',' param
     ;
 
 
-statements:
+
+statements_block:
     /*empty*/
+    | statements
+    ;
+
+statements: 
+    statement  
+    | if_statement 
+    | for_statement
+    | while_statement
     | statement statements 
     | if_statement statements
     | for_statement statements
@@ -127,36 +132,34 @@ statements:
     ;
 
 statement:     
-     IDENTIFIER ASSIGN int_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
+    IDENTIFIER ASSIGN int_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
     | IDENTIFIER ASSIGN real_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
     | IDENTIFIER ASSIGN bool_expr ';'  {checkVarIsDecl($1,$3 ? "true" : "false",yylineno);}
     | IDENTIFIER ASSIGN valoare_str ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare_str ';' // verificare
     | IDENTIFIER dimensiune ASSIGN int_expr ';' // verificare
     | IDENTIFIER dimensiune ASSIGN real_expr ';'  // verificare   
-     ;
+    ;
 
 
-/******** control statements *********/
-/************************************/
+/************** control statements ****************/
+/**************************************************/
 
 
-
-if_statement : IF '(' condition ')' THEN '{' statements '}'
-    | IF '(' condition ')' THEN '{' statements '}' ELSE '{' statements '}'
+if_statement : IF '(' condition ')' THEN '{' statements_block '}'
+    | IF '(' condition ')' THEN '{' statements_block '}' ELSE '{' statements_block '}'
     ;
 for_statement :
-    FOR '(' IDENTIFIER ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' block
-    | FOR '(' IDENTIFIER ':' TYPE  ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' block
+    FOR '(' IDENTIFIER ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' control_statements_block
+    | FOR '(' IDENTIFIER ':' TYPE  ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' control_statements_block
     ;
-while_statement :
-    WHILE '('condition')' block
 
-expression:
-    bool_expr
-    | int_expr
-    | real_expr // le stocam ca string in expression
-    ;
+while_statement :
+    WHILE '('condition')' control_statements_block
+
+control_statements_block:
+    BGIN statements_block END ';'
+
 condition:
     bool_expr
     | relativ_condition
@@ -170,6 +173,25 @@ list: // verificarea cazului cu virgula in plus
     | list ',' real_expr
     | list ',' valoare_str
     ;
+
+dimensiune:
+    '[' INT_VALUE ']'
+    | '[' INT_VALUE ']''[' INT_VALUE ']'
+    ;
+/***************** Expressions *******************/
+/************************************************/
+
+valoare_str:
+    CHAR_VALUE    {$$ = $1;}
+    | STRING_VALUE  {$$ = $1;}
+    ;
+
+expression:
+    bool_expr
+    | int_expr
+    | real_expr // le stocam ca string in expression
+    ;
+
 int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
   |  int_expr SUB int_expr  {$$ = $1 - $3;}
   |  int_expr MUL int_expr  {$$ = $1 * $3;}
@@ -279,7 +301,7 @@ void initTable() {
        if (file == NULL) {
         fprintf(stderr, "Error opening file.\n");
     }
-    fprintf(file, "ID       TIP       VAL        CONST");
+    fprintf(file, "ID       TIP       VAL        CONST          SCOPE");
     fprintf(file, "\n");
 
     // Close the file
@@ -287,9 +309,6 @@ void initTable() {
 }
 
 void clearTable() {
-     // Specify the file path
-
-    // Use the remove function to delete the file
     if (remove(FILE_NAME) != 0) {
         perror("Error deleting file");
     }
@@ -302,6 +321,6 @@ int main(int argc, char** argv){
      initTable();
      yyin=fopen(argv[1],"r");
      yyparse();    
-     printf("%s",scope.c_str());
+     printf("%s\n",scope.c_str());
      variabile.addVarToTable();
 } 
