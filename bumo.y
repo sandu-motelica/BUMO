@@ -15,6 +15,7 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
 void checkVarIsDecl(const string& name,const string& value, int line);
 bool toBool(const string& val);
 int verifBool(const string& val);
+vector<string> array;
 
 string scope = "main";
 
@@ -89,7 +90,7 @@ var_declaration:
     | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
-    | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
+    | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { for (const string& s : array) {cout<<s<< " ";} cout<<endl; array.clear(); }
     | IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($1,$3,to_string($5),false,scope,yylineno); }
     | IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($1,$3,to_string($5),false,scope,yylineno); }
     | IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($1,$3,$5,false,scope,yylineno); }
@@ -197,12 +198,12 @@ condition:
     ;
 
 list: // verificarea cazului cu virgula in plus
-    | int_expr
-    | real_expr
-    | valoare_str
-    | list ',' int_expr
-    | list ',' real_expr
-    | list ',' valoare_str
+    int_expr { array.push_back(to_string($1));}
+    | real_expr { array.push_back(to_string($1));}
+    | valoare_str { array.push_back($1); }
+    | list ',' int_expr { array.push_back(to_string($3));}
+    | list ',' real_expr {  array.push_back(to_string($3));}
+    | list ',' valoare_str { array.push_back($3); }
     ;
 
 dimensiune:

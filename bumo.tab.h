@@ -89,7 +89,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 24 "bumo.y"
+#line 25 "bumo.y"
 
     char* str;
     const char* strconst;

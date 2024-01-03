@@ -1,7 +1,8 @@
 ID                         TIP                       VAL                         SCOPE                           Location                         Var Type             Function params     
 i                             boolean                     true                       main                         global                           var                 
-j                             boolean                     false                      main                         global                           var                 
-z                             integer                     1                          main                         global                           var                 
+a                             string                      "boolean"                  main                         global                           var                 
+z                             integer                     23                         main                         global                           var                 
+zuma                          integer                     23                         main                         global                           var                 
 e                             boolean                     true                       main                         global                           constant            
 gig                           string                      "antonio"                  main                         global                           var                 
 test                          integer                                                main                         location_type                    function            count:real leg:integer 
