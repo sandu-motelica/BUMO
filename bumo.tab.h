@@ -81,7 +81,8 @@ extern int yydebug;
     REAL_VALUE = 287,
     SUB = 288,
     MUL = 289,
-    DIV = 290
+    DIV = 290,
+    UMINUS = 291
   };
 #endif
 
@@ -89,7 +90,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 25 "bumo.y"
+#line 28 "bumo.y"
 
     char* str;
     const char* strconst;
@@ -97,7 +98,7 @@ union YYSTYPE
     float ftval;
     bool bval;
 
-#line 101 "bumo.tab.h"
+#line 102 "bumo.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

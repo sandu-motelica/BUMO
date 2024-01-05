@@ -26,7 +26,7 @@ int VarList::IsDeclareVariable(const string& name, const string& value){
     return 3;  
 }
 bool VarList::isCompatibleValue(const string& type, const string& value) {
-        cout<<type<<" "<<value<<endl;
+        // cout<<type<<" "<<value<<endl;
     if (type == "integer") {
         // Verificare pentru tipul INTEGER
         try {
@@ -105,6 +105,44 @@ string VarList::getType(const string& name){
         }
     }
     return "";
+}
+
+void VarList::addValuesToArr(const string& name, vector<string> values, int size){
+
+    for(Var& v: vars){
+       if (name == v.name) {
+            v.arrSize = size;
+            v.var_type="array";
+            for(const string& s: values){
+                v.arr.push_back(s);
+                cout << s <<" ";
+            }
+        } 
+    }
+    cout<<endl;
+}
+void VarList::assignValueArr(const string& name,const string& value, int index, int line){
+    for (Var& v : vars) {
+    if (name == v.name) {
+        cout << name << " " << index << " " << v.arrSize << endl;
+        if (v.arrSize < index) {
+            fprintf(stderr, "%d: Error: Array index '%d' out of bounds.\n", line, index);
+            exit(EXIT_FAILURE);
+        }
+        if (v.arr.size() < index) {
+            fprintf(stderr, "%d: Error: Maximum possible index of assign is '%ld'.\n", line, v.arr.size());
+            exit(EXIT_FAILURE);
+        }
+        if (v.arr.size() == index) {
+            v.arr.push_back(value);
+        } else {
+            v.arr[index] = value;
+        }
+        for (const string& s : v.arr)
+            cout << s << " ";
+    }
+}
+    cout<<endl;
 }
 
 void VarList::addVarToTable(){

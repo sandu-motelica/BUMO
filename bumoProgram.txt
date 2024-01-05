@@ -2,9 +2,9 @@ program BumoProject;
 
 i:boolean := true;
 a:string := "asdf";
-lis:integer[20] := {1,3};  
-z:integer:=1;
-zuma:integer:=23;
+lis:integer[5] := {1,3};  
+z:real:=3.0+1.0*-2.0-4.0;
+zuma:integer:=-23+3*2--12;
 list:char[20] := {'a','b'};  
 const e:boolean := true; 
 function test(leg:integer,count:real):integer
@@ -16,13 +16,14 @@ begin
 end;
 
 begin
+  lis[1]:=23;
   if((4==4 || 4<2) && 4==2) then {}
   else{ }
   for(aux:integer:=1+3;1<3;i:=4+1)
   begin
     
   end;
-  z:=Eval(zuma);
+  zuma:=Eval(zuma);
   a:=TypeOf(true || false);
   while(true)
   begin

@@ -1,3 +1,4 @@
+
 %{
 #include <iostream>
 #include <vector>
@@ -13,6 +14,8 @@ void clearTable();
 class VarList variabile;
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct,const string& scope, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
+void declArr(const string& name, const string& type, vector<string> values , bool ct, const string& scope,int size, int line);
+void checkArr(const string& name, const string& value, int index, int line);
 bool toBool(const string& val);
 int verifBool(const string& val);
 vector<string> array;
@@ -33,10 +36,10 @@ string scope = "main";
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
 %token<intval> INT_VALUE 
 %token<ftval> REAL_VALUE
-%type<str> valoare_str 
+%type<str> valoare 
 %type<strconst> eval_function tpof_function
 %type<bval> bool_expr relativ_expr relativ_condition
-%type<intval> int_expr 
+%type<intval> int_expr dimensiune
 %type<ftval> real_expr 
 // %type<bloc> funct
 // %type<param_type> 
@@ -49,9 +52,11 @@ string scope = "main";
 
 %left ADD SUB  
 %left MUL DIV 
-
+%left UMINUS
 
 %%
+
+// AS PUTEA CONVERTI TOATE TIPURILE DE DATE IN valoare SI SA NU MAI SCRIU ACEIASI CHESTIE DE MAI MULTE ORI
 
 /***************** GENERAL RULES ******************/
 /*************************************************/
@@ -90,16 +95,12 @@ var_declaration:
     | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
-    | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { for (const string& s : array) {cout<<s<< " ";} cout<<endl; array.clear(); }
-    | IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($1,$3,to_string($5),false,scope,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($1,$3,to_string($5),false,scope,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($1,$3,$5,false,scope,yylineno); }
-    | IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($1,$3,$5 ? "true" : "false",false,scope,yylineno); }
-    | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' 
-    | CONST IDENTIFIER ':' TYPE ASSIGN int_expr ';'  { checkVarDecl($2,$4,to_string($6),true,scope,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN real_expr ';' { checkVarDecl($2,$4,to_string($6),true,scope,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN valoare_str ';' { checkVarDecl($2,$4,$6,true,scope,yylineno); }
-    | CONST IDENTIFIER ':' TYPE ASSIGN bool_expr ';' { checkVarDecl($2,$4,$6 ? "true" : "false",true,scope,yylineno); }
+    | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($1, $3, array ,false, scope,$4,yylineno);
+                                                                 array.clear(); }
+    | IDENTIFIER ':' TYPE ASSIGN valoare ';' { checkVarDecl($1,$3,$5,false,scope,yylineno); }
+    | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($2, $4, array ,true, scope,$5,yylineno);
+                                                                 array.clear(); }
+    | CONST IDENTIFIER ':' TYPE ASSIGN valoare ';' { checkVarDecl($2,$4,$6,true,scope,yylineno); }
     ;
 
 
@@ -122,8 +123,6 @@ param:
                             } 
     ;
 
-
-
 statements_block:
     /*empty*/
     | statements
@@ -141,13 +140,8 @@ statements:
     ;
 
 statement:     
-    IDENTIFIER ASSIGN int_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
-    | IDENTIFIER ASSIGN real_expr ';'  {checkVarIsDecl($1,to_string($3),yylineno);}
-    | IDENTIFIER ASSIGN bool_expr ';'  {checkVarIsDecl($1,$3 ? "true" : "false",yylineno);}
-    | IDENTIFIER ASSIGN valoare_str ';'  {checkVarIsDecl($1,$3,yylineno);}
-    | IDENTIFIER dimensiune ASSIGN valoare_str ';' // verificare
-    | IDENTIFIER dimensiune ASSIGN int_expr ';' // verificare
-    | IDENTIFIER dimensiune ASSIGN real_expr ';'  // verificare   
+    IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
+    | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
     ;
 
 eval_function:
@@ -198,25 +192,23 @@ condition:
     ;
 
 list: // verificarea cazului cu virgula in plus
-    int_expr { array.push_back(to_string($1));}
-    | real_expr { array.push_back(to_string($1));}
-    | valoare_str { array.push_back($1); }
-    | list ',' int_expr { array.push_back(to_string($3));}
-    | list ',' real_expr {  array.push_back(to_string($3));}
-    | list ',' valoare_str { array.push_back($3); }
+    valoare { array.push_back($1); }
+    | list ',' valoare { array.push_back($3); }
     ;
 
 dimensiune:
-    '[' INT_VALUE ']'
-    | '[' INT_VALUE ']''[' INT_VALUE ']'
+    '[' INT_VALUE ']' {$$ = $2;}
     ;
 /***************** Expressions *******************/
 /************************************************/
 
-valoare_str:
+valoare:
     CHAR_VALUE    {$$ = $1;}
     | STRING_VALUE  {$$ = $1;}
-    | tpof_function { 
+    | int_expr {$$ = strdup(to_string($1).c_str());}
+    | real_expr {$$ = strdup(to_string($1).c_str());}
+    | bool_expr {$$ = $1 ? strdup("true") : strdup("false");}
+    | tpof_function {  
                       char temp[16]; 
                       snprintf(temp,sizeof(temp),"\"%s\"",$1);
                       $$ = strdup(temp);
@@ -234,6 +226,7 @@ int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
   |  int_expr SUB int_expr  {$$ = $1 - $3;}
   |  int_expr MUL int_expr  {$$ = $1 * $3;}
   |  int_expr DIV int_expr  {$$ = $1 / $3;}
+  |  SUB int_expr %prec UMINUS {$$ = -$2;}
   |  '(' int_expr ')' {$$ = $2; }
   |  INT_VALUE {$$ = $1;}
 //   |  IDENTIFIER {string  temp = variabile.getValue($1);
@@ -248,6 +241,7 @@ real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
   |  real_expr SUB real_expr  {$$ = $1 - $3;}
   |  real_expr MUL real_expr  {$$ = $1 * $3;}
   |  real_expr DIV real_expr  {$$ = $1 / $3;}
+  |  SUB real_expr %prec UMINUS {$$ = -$2;}
   |  '(' real_expr ')' {$$ = $2; }
   |  REAL_VALUE {$$ = $1;}
 //   |  IDENTIFIER { string  temp = variabile.getValue($1);
@@ -306,6 +300,7 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
         exit(EXIT_FAILURE); 
     }
     variabile.assignValue(name,value);
+    cout<< name<< " "<<type<<" "<< value<<endl;
 }
 void checkVarIsDecl(const string& name,const string& value, int line){
     if(variabile.isConstant(name)){
@@ -320,6 +315,48 @@ void checkVarIsDecl(const string& name,const string& value, int line){
         exit(EXIT_FAILURE); 
     }
     variabile.assignValue(name,value);
+}
+
+void declArr(const string& name, const string& type, vector<string> values , bool ct, const string& scope,int size, int line){
+    for(const string& s: values){
+        if(!variabile.isCompatibleValue(type,s)){
+           fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),type.c_str());
+           exit(EXIT_FAILURE); 
+        }
+    }
+    if(!variabile.declareVariable(name, type,ct,scope)){
+        fprintf(stderr, "%d: Error: Variable %s is already defined\n",line, name.c_str());
+        exit(EXIT_FAILURE); 
+    }
+
+    if(values.size() > size){
+        fprintf(stderr, "%d: Error: Array '%s' index exceeds size '%d'.\n",line, name.c_str(),size);
+           exit(EXIT_FAILURE); 
+    }
+
+    for(const string& s: values){
+        if(!variabile.isCompatibleValue(type,s)){
+           fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),type.c_str());
+           exit(EXIT_FAILURE); 
+        }
+    }
+    variabile.addValuesToArr(name,values,size);    
+}
+
+void checkArr(const string& name, const string& value, int index, int line){
+    if(!variabile.existsVar(name)){
+        fprintf(stderr, "%d: Error: Variable %s is not defined\n",line, name.c_str());
+        exit(EXIT_FAILURE);
+    }
+    if(!variabile.isCompatibleValue(variabile.getType(name),value)){
+           fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),variabile.getType(name).c_str());
+           exit(EXIT_FAILURE); 
+    }
+    if(variabile.isConstant(name)){
+        fprintf(stderr, "%d: Error: Constant %s can't be changed\n",line, name.c_str());
+        exit(EXIT_FAILURE);
+    }
+    variabile.assignValueArr(name, value, index, line);
 }
 
 int verifBool(const string& val){

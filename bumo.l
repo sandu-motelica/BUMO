@@ -20,7 +20,7 @@
 "TypeOf" {return TYPEOF;}
 [a-zA-Z][a-zA-Z0-9_]* {yylval.str = strdup(yytext); return IDENTIFIER;}
 ":=" {return ASSIGN;}
-0|[-]?[1-9][0-9]* {yylval.intval = atoi(yytext); return INT_VALUE;}
+0|[1-9][0-9]* {yylval.intval = atoi(yytext); return INT_VALUE;}
 0\.[0-9]+|[1-9][0-9]*\.[0-9]+  { 
                             char *real, *zecim, *ch = strdup(yytext);
                             real = strtok(ch, ".");
