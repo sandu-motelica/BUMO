@@ -1,4 +1,5 @@
 #include "VarList.h"
+
 using namespace std;
 
 
@@ -72,6 +73,38 @@ bool VarList::isConstant(const string& name){
         }
     }
     return false;
+}
+
+bool VarList::isFunction(const string& name){
+    for(const Var& v: vars){
+        if(v.name==name && v.var_type=="function"){
+            return true;
+        }
+    }
+    return false;
+}
+
+void VarList::checkArgs(const string& name, vector<string> args,int line){
+    reverse(args.begin(),args.end());
+    cout<<"ajunge\n";
+    int len = args.size();
+    int count = 0;
+    for(const Var& v:vars){
+        if(v.location_type=="func_param" && v.scope==name) {
+            count++;
+            if(!isCompatibleValue(v.type,args.back())){
+                fprintf(stderr, "%d: Error: Invalid value for param '%s' of type %s\n",line,v.name.c_str(), v.type.c_str());
+                exit(EXIT_FAILURE);
+            }
+            cout << v.name << " " << args.back()<< endl; 
+            args.pop_back();
+        }
+    }
+    if(len!=count){
+        fprintf(stderr, "%d: Error: Invalid call function '%s'\n",line, name.c_str());
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 bool VarList::existsVar(const string& name){
@@ -177,12 +210,24 @@ void VarList::addVarToTable(){
 
 
 
-void VarList::addScope(const string& scope){
+void VarList::addScopeParams(const string& scope){
        for (Var& v : vars) {
         if (v.scope=="func_param") {
             v.scope = scope;
         }
     }
+}
+
+void VarList::addScopeVars(int count, const string& scope){
+    vector<Var>::iterator i = vars.end();
+    i--;
+    while (i != vars.begin() && count > 0)
+    {
+        i->scope = scope;
+        cout<<count<< " "<< i->scope<<endl;
+        count--;
+        i--;
+    } 
 }
 
 bool VarList::declareFunc(const string& name,const string& type,const string& scope){

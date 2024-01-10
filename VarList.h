@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
+#include <algorithm>  
 
 using namespace std;
 
@@ -28,8 +29,11 @@ class VarList {
     void assignValue(const string& name, const string& value);
     void addValuesToArr(const string& name, vector<string> values, int size);
     void assignValueArr(const string& name,const string& value, int index, int line);
+    bool isFunction(const string& name);
+    void checkArgs(const string& name, vector<string> args,int line);
     void addVarToTable();
-    void addScope(const string& scope);
+    void addScopeParams(const string& scope);
+    void addScopeVars(int count, const string& scope);
     bool existsVar(const string& name);
     string getValue(const string& name);
     string getType(const string& name);

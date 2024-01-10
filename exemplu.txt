@@ -1,0 +1,13 @@
+program BumoProject;
+
+g:boolean := false;
+x:real:=3.54;
+z:real:=-3.0+1.0*2.0-4.0*x;
+zuma:integer:=(23+3*2+12)%2;
+  
+const e:boolean := true; 
+begin
+  if(z < 0.0) then {}
+  else{}
+end.
+  

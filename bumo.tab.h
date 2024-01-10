@@ -56,33 +56,39 @@ extern int yydebug;
     CONST = 262,
     FUNCTION = 263,
     ADD = 264,
-    AND = 265,
-    NOT = 266,
-    OR = 267,
-    IF = 268,
-    ELSE = 269,
-    THEN = 270,
-    EQ = 271,
-    NQ = 272,
-    GT = 273,
-    LT = 274,
-    LE = 275,
-    GE = 276,
-    FOR = 277,
-    WHILE = 278,
-    EVAL = 279,
-    TYPEOF = 280,
-    IDENTIFIER = 281,
-    TYPE = 282,
-    STRING_VALUE = 283,
-    CHAR_VALUE = 284,
-    BOOL_VALUE = 285,
-    INT_VALUE = 286,
-    REAL_VALUE = 287,
-    SUB = 288,
-    MUL = 289,
-    DIV = 290,
-    UMINUS = 291
+    SUB = 265,
+    DIV = 266,
+    MUL = 267,
+    AND = 268,
+    NOT = 269,
+    OR = 270,
+    IF = 271,
+    ELSE = 272,
+    THEN = 273,
+    EQ = 274,
+    NQ = 275,
+    GT = 276,
+    LT = 277,
+    LE = 278,
+    GE = 279,
+    FOR = 280,
+    WHILE = 281,
+    EVAL = 282,
+    TYPEOF = 283,
+    RETURN = 284,
+    CLASS = 285,
+    TYPES = 286,
+    VAR = 287,
+    FUNCT = 288,
+    IDENTIFIER = 289,
+    TYPE = 290,
+    STRING_VALUE = 291,
+    CHAR_VALUE = 292,
+    BOOL_VALUE = 293,
+    INT_VALUE = 294,
+    REAL_VALUE = 295,
+    MOD = 296,
+    UMINUS = 297
   };
 #endif
 
@@ -90,15 +96,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 28 "bumo.y"
+#line 33 "bumo.y"
 
     char* str;
-    const char* strconst;
     int intval;
     float ftval;
     bool bval;
 
-#line 102 "bumo.tab.h"
+#line 107 "bumo.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -16,42 +16,40 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
 void checkVarIsDecl(const string& name,const string& value, int line);
 void declArr(const string& name, const string& type, vector<string> values , bool ct, const string& scope,int size, int line);
 void checkArr(const string& name, const string& value, int index, int line);
+void callFunction(const string&name, vector<string> args, int line);
 bool toBool(const string& val);
 int verifBool(const string& val);
+void verificareCorectitudineId(const string& id, int line);
+void verificareCorectitudineVal(const string& value, const string& type, int line);
 vector<string> array;
-
+bool isReturn = false; 
 string scope = "main";
+int counter = 0;
+string exprflg = "none";
 
 #define FILE_NAME "table.txt"
 %}
 
 %union {
     char* str;
-    const char* strconst;
     int intval;
     float ftval;
     bool bval;
 }
-%token ASSIGN PROGR BGIN END CONST FUNCTION ADD AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE EVAL TYPEOF
-%token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE
-%token<intval> INT_VALUE 
-%token<ftval> REAL_VALUE
-%type<str> valoare 
-%type<strconst> eval_function tpof_function
-%type<bval> bool_expr relativ_expr relativ_condition
-%type<intval> int_expr dimensiune
-%type<ftval> real_expr 
-// %type<bloc> funct
-// %type<param_type> 
+%token ASSIGN PROGR BGIN END CONST FUNCTION ADD SUB DIV MUL AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE EVAL TYPEOF RETURN CLASS TYPES VAR FUNCT
+%token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE INT_VALUE REAL_VALUE
+%type<str> valoare expr eval_function tpof_function
+%type<bval> relativ_expr relativ_condition
+%type<intval> dimensiune
 %start start
 
-%left NOT 
-%left AND 
 %left OR 
-%left EQ NQ GT LT LE GE
-
+%left AND 
+%left EQ NQ
+%left GT LT LE GE
 %left ADD SUB  
-%left MUL DIV 
+%left MUL DIV MOD
+%left NOT 
 %left UMINUS
 
 %%
@@ -62,36 +60,55 @@ string scope = "main";
 /*************************************************/
 
 start:
-    name function_block '.' { scope="main"; printf("The programme is correct!\n");}
+    name declaration_block BGIN statements_block END  '.' { scope="main"; printf("The programme is correct!\n");}
     ;
 
 name:
     PROGR IDENTIFIER ';'
     ;
 
-function_block: 
-    declaration_block BGIN statements_block END 
-    ;
-
 declaration_block :
+    /*emptu*/
+    | TYPES types_declarations VAR var_declarations FUNCT function_declarations
+    ;
+
+types_declarations:
     /*empty*/
-    | declarations
+    | class_declaration types_declarations {counter++;}
     ;
 
-declarations:
-    declaration
-    | declaration declarations
+var_declarations:
+    /*empty*/
+    | var_declaration var_declarations {counter++;}
     ;
 
-declaration:
-    var_declaration  
-    | function_declaration
+function_declarations:
+    /*empty*/
+    | function_declaration function_declarations {counter++;}
+    ;
+
+class_declaration:
+    CLASS IDENTIFIER BGIN class_block END ';'
+    ;
+
+class_block:
+    var_class_block function_class_block
+    ;
+
+var_class_block:
+    var_declaration 
+    | var_declaration var_class_block
+    ;
+function_class_block:
+    /*empty*/
+    | function_declaration function_class_block
     ;
 
 var_declaration:
     IDENTIFIER ':' TYPE ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
+    | IDENTIFIER ':' IDENTIFIER ';' {    }
     | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
@@ -105,66 +122,103 @@ var_declaration:
 
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' param ')' ':' TYPE  function_block ';' {  variabile.addScope($2); { if(!variabile.declareFunc($2, $7,"main")){
+    FUNCTION IDENTIFIER '(' params ')' ':' TYPE  function_block ';' { scope=$2; variabile.addScopeVars(counter,$2);  variabile.addScopeParams($2); { if(!variabile.declareFunc($2, $7,"main")){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $2);
-            exit(EXIT_FAILURE); }}}  
+            exit(EXIT_FAILURE); }}
+            counter = 0;}  
     ;
 
-param: 
-    IDENTIFIER ':' TYPE  { printf("%s\n", $1); 
-                              if(!variabile.declareVariable($1, $3,false,"func_param")){
-                                fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
-                                exit(EXIT_FAILURE); }
-                            } 
-    | IDENTIFIER ':' TYPE ',' param { printf("%s\n", $1); 
+params: 
+    /*empty*/
+    | param_list
+    ;
+
+param_list:
+    param
+    | param_list ',' param 
+    ;
+
+param:
+    IDENTIFIER ':' TYPE { printf("parametri---%s\n", $1); 
                               if(!variabile.declareVariable($1, $3,false,"func_param")){
                                 fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
                                 exit(EXIT_FAILURE); }
                             } 
     ;
+
+function_block:
+    var_declarations BGIN statements_block END {
+        if (!isReturn) {
+            fprintf(stderr, "%d: Error: Function must have a return statement\n", yylineno);
+            exit(EXIT_FAILURE);
+        }
+        isReturn = false; 
+        scope = "main";
+    }
+    ;
+
 
 statements_block:
     /*empty*/
     | statements
     ;
 
-statements: 
-    statement  
-    | if_statement 
+statements:
+    statement
+    | if_statement
     | for_statement
     | while_statement
-    | statement statements 
+    | return_statement
+    | statement statements
     | if_statement statements
     | for_statement statements
     | while_statement statements
+    | return_statement statements
     ;
+
+return_statement:
+    RETURN valoare ';' {
+        isReturn = true;
+    }
 
 statement:     
     IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
+    | call_function ';' 
     ;
 
+call_function:
+    IDENTIFIER '(' args_list ')'  { callFunction($1,array,yylineno); array.clear(); }
+    ;
+
+args_list:
+    /*empty*/
+    | args 
+    ;
+
+args:
+    arg
+    | arg ',' args
+    ;
+
+arg:
+    call_function
+    | valoare { array.push_back($1); }
+    ;
+
+
 eval_function:
-    EVAL '(' int_expr ')'   { $$ = to_string($3).c_str();  }
-    | EVAL '(' real_expr ')' { $$ = to_string($3).c_str(); }
-    | EVAL '(' bool_expr ')'  { $$ = $3 ? "true" : "false"; }
-    | EVAL '('IDENTIFIER')'   { if(!variabile.existsVar($3)){
-                                    fprintf(stderr, "%d: Error: Variable %s is not defined\n",yylineno, $3);
-                                    exit(EXIT_FAILURE); }
-                                $$ = variabile.getValue($3).c_str();
-                                }
-    ; // va trebui sa implementez int real si bool expresiile aparte (care sa nu contina identificator)
+    EVAL '(' expr ')'   { $$ = $3;}
+    ;
+
 
 tpof_function:
-    TYPEOF '(' int_expr ')'   {  $$ = "integer";}
-    | TYPEOF '(' real_expr ')' { $$ = "real"; }
-    | TYPEOF '(' bool_expr ')'  { $$ = "boolean"; }
-    | TYPEOF '('IDENTIFIER')'   { if(!variabile.existsVar($3)){
-                                    fprintf(stderr, "%d: Error: Variable %s is not defined\n",yylineno, $3);
-                                    exit(EXIT_FAILURE); }
-                                 $$ = variabile.getType($3).c_str();
-                                }
-    ; // va trebui sa implementez int real si bool expresiile aparte (care sa nu contina identificator)
+    TYPEOF '(' expr ')'   {
+                             if(variabile.isCompatibleValue("integer", $3)) $$ = strdup("integer");
+                             if(variabile.isCompatibleValue("real", $3)) $$ = strdup("real");
+                             if(variabile.isCompatibleValue("boolean", $3)) $$ = strdup("boolean");     
+                          }
+    ;
 
 
 
@@ -172,12 +226,12 @@ tpof_function:
 /**************************************************/
 
 
-if_statement : IF '(' condition ')' THEN '{' statements_block '}'
+if_statement : IF '(' condition ')' THEN '{' statements_block '}' 
     | IF '(' condition ')' THEN '{' statements_block '}' ELSE '{' statements_block '}'
     ;
 for_statement :
-    FOR '(' IDENTIFIER ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' control_statements_block
-    | FOR '(' IDENTIFIER ':' TYPE  ASSIGN expression ';' condition ';' IDENTIFIER ASSIGN expression ')' control_statements_block
+    FOR '(' IDENTIFIER ASSIGN expr ';' condition ';' IDENTIFIER ASSIGN expr ')' control_statements_block
+    | FOR '(' IDENTIFIER ':' TYPE  ASSIGN expr ';' condition ';' IDENTIFIER ASSIGN expr ')' control_statements_block
     ;
 
 while_statement :
@@ -187,8 +241,7 @@ control_statements_block:
     BGIN statements_block END ';'
 
 condition:
-    bool_expr
-    | relativ_condition
+    relativ_condition {cout<<"Conditie: "<<$1<<endl;}
     ;
 
 list: // verificarea cazului cu virgula in plus
@@ -197,93 +250,254 @@ list: // verificarea cazului cu virgula in plus
     ;
 
 dimensiune:
-    '[' INT_VALUE ']' {$$ = $2;}
+    '[' INT_VALUE ']' {$$ = stoi($2);}
     ;
-/***************** Expressions *******************/
+/***************** expressions *******************/
 /************************************************/
 
 valoare:
     CHAR_VALUE    {$$ = $1;}
     | STRING_VALUE  {$$ = $1;}
-    | int_expr {$$ = strdup(to_string($1).c_str());}
-    | real_expr {$$ = strdup(to_string($1).c_str());}
-    | bool_expr {$$ = $1 ? strdup("true") : strdup("false");}
+    | expr {$$ = $1; exprflg = "none";}
     | tpof_function {  
                       char temp[16]; 
                       snprintf(temp,sizeof(temp),"\"%s\"",$1);
                       $$ = strdup(temp);
+                      exprflg = "none";
                     }
-    | eval_function {$$ = strdup($1);}
+    | eval_function {$$ = $1; exprflg = "none";} 
     ;
 
-expression:
-    bool_expr
-    | int_expr
-    | real_expr // le stocam ca string in expression
-    ;
 
-int_expr :  int_expr ADD int_expr  {$$ = $1 + $3;}
-  |  int_expr SUB int_expr  {$$ = $1 - $3;}
-  |  int_expr MUL int_expr  {$$ = $1 * $3;}
-  |  int_expr DIV int_expr  {$$ = $1 / $3;}
-  |  SUB int_expr %prec UMINUS {$$ = -$2;}
-  |  '(' int_expr ')' {$$ = $2; }
-  |  INT_VALUE {$$ = $1;}
-//   |  IDENTIFIER {string  temp = variabile.getValue($1);
-//                  if(!variabile.isCompatibleValue("integer",temp)){
-//                         fprintf(stderr, "%d: Error: Variable '%s' is not of integer type\n",yylineno, $1);
-//                          exit(EXIT_FAILURE);
-//                  } 
-//                  $$ = stoi(temp); 
-//                  }
-  ;
-real_expr :  real_expr ADD real_expr  {$$ = $1 + $3;}
-  |  real_expr SUB real_expr  {$$ = $1 - $3;}
-  |  real_expr MUL real_expr  {$$ = $1 * $3;}
-  |  real_expr DIV real_expr  {$$ = $1 / $3;}
-  |  SUB real_expr %prec UMINUS {$$ = -$2;}
-  |  '(' real_expr ')' {$$ = $2; }
-  |  REAL_VALUE {$$ = $1;}
-//   |  IDENTIFIER { string  temp = variabile.getValue($1);
-//                  if(!variabile.isCompatibleValue("real",temp)){
-//                         fprintf(stderr, "%d: Error: Variable '%s' is not of real type\n",yylineno, $1);
-//                          exit(EXIT_FAILURE);
-//                  } 
-//                  $$ = stod(temp); 
-//                  }
-  ;
+expr: expr ADD expr { 
+                    if(exprflg!="integer" && exprflg!="real"){
+                        fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n",yylineno, exprflg.c_str());
+                        exit(EXIT_FAILURE);     
+                    }
+                        
+                    if(exprflg == "integer") {
+                        int res_int,n1,n2;
+                        n1 = stoi($1);
+                        n2 = stoi($3);
+                        res_int = n1+n2;
+                        $$ = strdup(to_string(res_int).c_str());
+                    }
+                    else {
+                        float res_float,n1,n2;
+                        n1 = stof($1);
+                        n2 = stof($3);
+                        res_float = n1+n2;
+                        $$ = strdup(to_string(res_float).c_str());
+                    }
 
-bool_expr :  bool_expr AND bool_expr  {  $$ = $1 && $3;}
-  |  bool_expr OR bool_expr  {$$ = $1 || $3;}
-  |  NOT bool_expr  {$$ = !$2;}
-  |  '(' bool_expr ')' {$$ = $2; }
-  |  BOOL_VALUE {$$ = toBool($1); }
-//   |  IDENTIFIER { string temp = variabile.getValue($1);
-//                     if(verifBool(temp)!=3){
-//                          $$=toBool(temp);
-//                     } else { fprintf(stderr, "%d: Error: Variable '%s' is not of boolean type\n",yylineno, $1);
-//                         exit(EXIT_FAILURE);
-//                     }
-//                 }
+                    }
+  |  expr SUB expr  { 
+                    if(exprflg!="integer" && exprflg!="real"){
+                        fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+                        exit(EXIT_FAILURE);     
+                    }
+                        
+                    if(exprflg == "integer") {
+                       int res_int,n1,n2;
+                        n1 = stoi($1);
+                        n2 = stoi($3);
+                        res_int = n1-n2;
+                        $$ = strdup(to_string(res_int).c_str());
+                    }
+                    else {
+                        float res_float,n1,n2;
+                        n1 = stof($1);
+                        n2 = stof($3);
+                        res_float = n1-n2;
+                        $$ = strdup(to_string(res_float).c_str());
+                    }  
+                }
+  |  expr MUL expr  {
+                    if(exprflg!="integer" && exprflg!="real"){
+                        fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+                        exit(EXIT_FAILURE);     
+                    }
+                        
+                    if(exprflg == "integer") {
+                       int res_int,n1,n2;
+                        n1 = stoi($1);
+                        n2 = stoi($3);
+                        res_int = n1*n2;
+                        $$ = strdup(to_string(res_int).c_str());
+                    }
+                    else {
+                        float res_float,n1,n2;
+                        n1 = stof($1);
+                        n2 = stof($3);
+                        res_float = n1*n2;
+                        $$ = strdup(to_string(res_float).c_str());
+                    }
+                }
+  |  expr DIV expr  { 
+                    if(exprflg != "integer" && exprflg != "real"){
+                                fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+                                exit(EXIT_FAILURE);     
+                        }
+                    if(exprflg == "integer") {
+                        int res_int,n1,n2;
+                        n1 = stoi($1);
+                        n2 = stoi($3);
+                        res_int = n1/n2;
+                        $$ = strdup(to_string(res_int).c_str());
+                    }
+                    else {
+                        float res_float,n1,n2;
+                        n1 = stof($1);
+                        n2 = stof($3);
+                        res_float = n1/n2;
+                        $$ = strdup(to_string(res_float).c_str());
+                    }
+  
+                }
+  |  expr MOD expr  {
+                        if(exprflg!="integer"){
+                                fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+                                exit(EXIT_FAILURE);     
+                        }
+                        int n1 = stoi($1);
+                        int n2 = stoi($3);
+                        int result = n1 % n2;
+                        $$ = strdup(to_string(result).c_str());
+                        }
+  |  SUB expr %prec UMINUS { 
+                        if(exprflg!="real" && exprflg!="integer"){
+                                fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+                                exit(EXIT_FAILURE);     
+                            }
+                        char neg_nr[32];
+                        strcpy(neg_nr,"-");
+                        strcat(neg_nr,$2);
+                        $$ = strdup(neg_nr);
+                        }
+  |  expr AND expr  { 
+                        if(exprflg!="boolean"){
+                            fprintf(stderr, "%d: Syntax error: casting is not support\n",yylineno);
+                            exit(EXIT_FAILURE);     
+                        }
+                        bool e1 = toBool($1);
+                        bool e2 = toBool($3);
+                        if(e1 && e2) $$ = strdup("true");
+                        else $$ = strdup("false");  
+  }
+  |  expr OR expr  { 
+                    if(exprflg!="boolean"){
+                        fprintf(stderr, "%d: Syntax error: casting is not support\n",yylineno);
+                        exit(EXIT_FAILURE);     
+                    }
+                    bool e1 = toBool($1);
+                    bool e2 = toBool($3);
+                    if(e1 || e2) $$ = strdup("true");
+                    else $$ = strdup("false");
+                    }
+  |  NOT expr  { 
+                    if(exprflg!="boolean"){
+                        fprintf(stderr, "%d: Syntax error: casting is not support\n", yylineno);
+                        exit(EXIT_FAILURE);     
+                    }
+                    if($2 == "true") $$ = strdup("false");
+                    else $$ = strdup("true");
+                    }
+
+  |  '(' expr ')' { $$ = $2; }
+  |  INT_VALUE { verificareCorectitudineVal(strdup($1),"integer", yylineno); $$=$1;}
+  |  BOOL_VALUE { verificareCorectitudineVal(strdup($1),"boolean", yylineno); $$=$1;}
+  |  REAL_VALUE { verificareCorectitudineVal(strdup($1),"real", yylineno); $$=$1;}
+  |  IDENTIFIER { verificareCorectitudineId(strdup($1), yylineno);  $$ = strdup(variabile.getValue($1).c_str());}
   ;
+    
 
 relativ_expr : 
-    bool_expr EQ bool_expr {$$ = ($1 == $3);}
-    | bool_expr NQ bool_expr {$$ = ($1 != $3);}
-    | int_expr EQ int_expr {$$ = ($1 == $3);}
-    | int_expr NQ int_expr {$$ = ($1 != $3);}
-    | int_expr LE int_expr {$$ = ($1 <= $3);}
-    | int_expr GE int_expr {$$ = ($1 >= $3);}
-    | int_expr GT int_expr {$$ = ($1 > $3);}
-    | int_expr LT int_expr {$$ = ($1 < $3);}
+    expr EQ expr {$$ = !strcmp($1,$3);}
+    | expr NQ expr {$$ = strcmp($1,$3);}
+    | expr LE expr {
+        if(exprflg != "integer" && exprflg != "real"){
+             fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+             exit(EXIT_FAILURE);     
+        }
+        if(exprflg == "integer") {
+            int n1,n2;
+            n1 = stoi($1);
+            n2 = stoi($3);
+            //cout<< n1<< " "<< n1<<" "<<exprflg<<" rezultat: "<< (n1<=n2) <<endl;
+            $$ = (n1 <= n2);
+        }
+        else {
+            float n1,n2;
+            n1 = stof($1);
+            n2 = stof($3);
+            //cout<< n1<< " "<< n2<<" "<<exprflg<<" rezultat: "<< (n1<=n2) <<endl;
+            $$ = (n1 <= n2);
+        }
+    }
+    | expr GE expr {
+        if(exprflg != "integer" && exprflg != "real"){
+             fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+             exit(EXIT_FAILURE);     
+        }
+        if(exprflg == "integer") {
+            int n1,n2;
+            n1 = stoi($1);
+            n2 = stoi($3);
+            $$ = (n1 >= n2);
+        }
+        else {
+            float n1,n2;
+            n1 = stof($1);
+            n2 = stof($3);
+            $$ = (n1 >= n2);
+        }
+    }
+    | expr GT expr {
+        if(exprflg != "integer" && exprflg != "real"){
+             fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+             exit(EXIT_FAILURE);     
+        }
+        if(exprflg == "integer") {
+            int n1,n2;
+            n1 = stoi($1);
+            n2 = stoi($3);
+            $$ = (n1 > n2);
+        }
+        else {
+            float n1,n2;
+            n1 = stof($1);
+            n2 = stof($3);
+            $$ = (n1 > n2);
+        }
+    }
+    | expr LT expr {
+        if(exprflg != "integer" && exprflg != "real"){
+             fprintf(stderr, "%d: Syntax error: Invalid operator for %s type\n", yylineno, exprflg.c_str());
+             exit(EXIT_FAILURE);     
+        }
+        if(exprflg == "integer") {
+            int n1,n2;
+            n1 = stoi($1);
+            n2 = stoi($3);
+            $$ = (n1 < n2);
+        }
+        else {
+            float n1,n2;
+            n1 = stof($1);
+            n2 = stof($3);
+            $$ = (n1 < n2);
+        }
+    }
     ;
 
 relativ_condition:
     relativ_condition AND relativ_condition  {  $$ = $1 && $3;}
     |  relativ_condition OR relativ_condition  {$$ = $1 || $3;}
+    |  relativ_condition EQ relativ_condition  {$$ = ($1 == $3);}
+    |  relativ_condition NQ relativ_condition  {$$ = ($1 != $3);}
     |  NOT relativ_condition  {$$ = !$2;}
     |  '(' relativ_condition ')' {$$ = $2; }
-    |  relativ_expr {$$ = $1; }
+    |  relativ_expr {$$ = $1; exprflg = "none";}
     ;
 
 %%
@@ -315,6 +529,7 @@ void checkVarIsDecl(const string& name,const string& value, int line){
         exit(EXIT_FAILURE); 
     }
     variabile.assignValue(name,value);
+    cout<< name<< " "<<" "<< value<<endl;
 }
 
 void declArr(const string& name, const string& type, vector<string> values , bool ct, const string& scope,int size, int line){
@@ -359,6 +574,14 @@ void checkArr(const string& name, const string& value, int index, int line){
     variabile.assignValueArr(name, value, index, line);
 }
 
+void callFunction(const string&name, vector<string> args, int line){
+    if(!variabile.isFunction(name)){
+         fprintf(stderr, "%d: Error: Variable %s is not defined as a function\n",line, name.c_str());
+         exit(EXIT_FAILURE);
+    }
+    variabile.checkArgs(name, args, line);
+}
+
 int verifBool(const string& val){
     if(val == "true") return 1;
     else if(val=="false") return 2;
@@ -367,6 +590,31 @@ int verifBool(const string& val){
 bool toBool(const string& val){
     if(val == "true") return true;
     return false;
+}
+
+void verificareCorectitudineVal(const string& value, const string& type, int line){
+    if(exprflg == "none"){
+        exprflg = type;
+    }
+    else if(exprflg != type){
+        fprintf(stderr, "%d: Syntax error: casting is not support\n",line);
+        exit(EXIT_FAILURE);
+    }
+}
+
+void verificareCorectitudineId(const string& id, int line){
+    if(!variabile.existsVar(id)){
+        fprintf(stderr, "%d: Error: Variable %s is not defined\n",line, id.c_str());
+        exit(EXIT_FAILURE);
+    }
+    string type = variabile.getType(id);
+    if(exprflg == "none"){
+        exprflg = type;
+    }
+    else if(exprflg != type){
+        fprintf(stderr, "%d: Syntax error: casting is not support\n",line);
+        exit(EXIT_FAILURE);
+    }
 }
 
 

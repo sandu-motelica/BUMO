@@ -1,11 +1,15 @@
 ID                         TIP                       VAL                         SCOPE                           Location                         Var Type             Function params     
-i                             boolean                     true                       main                         global                           var                 
-a                             string                      "boolean"                  main                         global                           var                 
-lis                           integer                                                main                         global                           array               
-z                             real                        -3.000000                  main                         global                           var                 
-zuma                          integer                     -5                         main                         global                           var                 
-list                          char                                                   main                         global                           array               
-e                             boolean                     true                       main                         global                           constant            
-gig                           string                      "antonio"                  main                         global                           var                 
-test                          integer                                                main                         location_type                    function            count:real leg:integer 
-test2                         integer                                                main                         location_type                    function            r:integer 
+y                             integer                     1                          main                         global                           var                 
+i                             boolean                     true                       test                         global                           var                 
+a                             string                      "integer"                  test                         global                           var                 
+lis                           integer                                                test                         global                           array               
+z                             real                        1.000000                   test                         global                           var                 
+zuma                          integer                     30                         test                         global                           var                 
+list                          char                                                   test                         global                           array               
+e                             boolean                     true                       test                         global                           constant            
+gig                           string                      "antonio"                  test                         global                           var                 
+gig5                          string                      "antonio"                  test                         global                           var                 
+test                          integer                                                main                         location_type                    function            leg:integer count:real 
+gig1                          string                      "antonio"                  test4                        test                             var                 
+gig3                          string                      "text"                     test4                        test                             var                 
+test4                         integer                                                main                         location_type                    function            leg2:integer count2:real 
