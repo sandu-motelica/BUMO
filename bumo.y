@@ -19,10 +19,13 @@ void checkArr(const string& name, const string& value, int index, int line);
 void callFunction(const string&name, vector<string> args, int line);
 bool toBool(const string& val);
 int verifBool(const string& val);
-void verificareCorectitudineId(const string& id, int line);
 void verificareCorectitudineVal(const string& value, const string& type, int line);
+void verificareCorectitudineId(const string& id, int line);
+void verificareCorectitudineFunct(const string& id, int line);
+string getFuncValue(const string& id);
 vector<string> array;
 bool isReturn = false; 
+string return_value = "none";
 string scope = "main";
 int counter = 0;
 string exprflg = "none";
@@ -38,7 +41,7 @@ string exprflg = "none";
 }
 %token ASSIGN PROGR BGIN END CONST FUNCTION ADD SUB DIV MUL AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE EVAL TYPEOF RETURN CLASS TYPES VAR FUNCT
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE INT_VALUE REAL_VALUE
-%type<str> valoare expr eval_function tpof_function
+%type<str> valoare expr call_function eval_function tpof_function
 %type<bval> relativ_expr relativ_condition
 %type<intval> dimensiune
 %start start
@@ -122,10 +125,17 @@ var_declaration:
 
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' params ')' ':' TYPE  function_block ';' {variabile.addScopeVars(counter,$2);  variabile.addScopeParams($2); { if(!variabile.declareFunc($2, $7,"main")){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $2);
-            exit(EXIT_FAILURE); }}
-            counter = 0;}  
+    FUNCTION IDENTIFIER '(' params ')' ':' TYPE  function_block ';' {
+                                            if(!variabile.isCompatibleValue($7,return_value)){
+                                                fprintf(stderr, "%d: Error: Incompatible return type. The function should return '%s'.\n",yylineno, $7);
+                                                exit(EXIT_FAILURE);
+                                            }
+                                            variabile.addScopeVars(counter,$2);  variabile.addScopeParams($2); 
+                                            if(!variabile.declareFunc($2, $7,"main")){
+                                                fprintf(stderr, "%d: Error: Variable '%s' is already defined\n",yylineno, $2);
+                                                exit(EXIT_FAILURE); 
+                                            }
+                                            counter = 0;}  
     ;
 
 params: 
@@ -184,17 +194,22 @@ statements:
 
 return_statement:
     RETURN valoare ';' {
+        return_value = $2;
         isReturn = true;
     }
 
 statement:     
     IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
-    | call_function ';' 
+    | statement_call_function ';'
+    ;
+
+statement_call_function:
+    IDENTIFIER '(' args_list ')'  { callFunction($1,array,yylineno); array.clear(); }
     ;
 
 call_function:
-    IDENTIFIER '(' args_list ')'  { callFunction($1,array,yylineno); array.clear(); }
+    IDENTIFIER '(' args_list ')'  { $$ = $1; callFunction($1,array,yylineno); array.clear(); }
     ;
 
 args_list:
@@ -208,8 +223,7 @@ args:
     ;
 
 arg:
-    call_function
-    | valoare { array.push_back($1); }
+    valoare { array.push_back($1); }
     ;
 
 
@@ -411,6 +425,7 @@ expr: expr ADD expr {
   |  BOOL_VALUE { verificareCorectitudineVal(strdup($1),"boolean", yylineno); $$=$1;}
   |  REAL_VALUE { verificareCorectitudineVal(strdup($1),"real", yylineno); $$=$1;}
   |  IDENTIFIER { verificareCorectitudineId(strdup($1), yylineno);  $$ = strdup(variabile.getValue($1).c_str());}
+  |  call_function { verificareCorectitudineId(strdup($1), yylineno); $$ = strdup(getFuncValue($1).c_str());}
   ;
     
 
@@ -510,7 +525,7 @@ printf("error: %s at line:%d\n",s,yylineno);
 
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct, const string& scope,int line){
     if(!variabile.declareVariable(name, type,ct,scope)){
-            fprintf(stderr, "%d: Error: Variable %s is already defined\n",line, name.c_str());
+            fprintf(stderr, "%d: Error: Variable '%s' is already defined\n",line, name.c_str());
             exit(EXIT_FAILURE); }
     if(!variabile.isCompatibleValue(type,value)){
         fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),type.c_str());
@@ -521,11 +536,11 @@ void checkVarDecl(const string& name,const string& type,const string& value, boo
 }
 void checkVarIsDecl(const string& name,const string& value, int line){
     if(variabile.isConstant(name)){
-        fprintf(stderr, "%d: Error: Constant %s can't be changed\n",line, name.c_str());
+        fprintf(stderr, "%d: Error: Constant '%s' can't be changed\n",line, name.c_str());
         exit(EXIT_FAILURE);
     }
     if(variabile.IsDeclareVariable(name,value)==3){
-        fprintf(stderr, "%d: Error: Variable %s is not defined\n",line, name.c_str());
+        fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, name.c_str());
         exit(EXIT_FAILURE); }
     else if(variabile.IsDeclareVariable(name,value)==2){
         fprintf(stderr, "%d: Error: Invalid value for variable '%s'\n",line, name.c_str());
@@ -543,7 +558,7 @@ void declArr(const string& name, const string& type, vector<string> values , boo
         }
     }
     if(!variabile.declareVariable(name, type,ct,scope)){
-        fprintf(stderr, "%d: Error: Variable %s is already defined\n",line, name.c_str());
+        fprintf(stderr, "%d: Error: Variable '%s' is already defined\n",line, name.c_str());
         exit(EXIT_FAILURE); 
     }
 
@@ -563,7 +578,7 @@ void declArr(const string& name, const string& type, vector<string> values , boo
 
 void checkArr(const string& name, const string& value, int index, int line){
     if(!variabile.existsVar(name)){
-        fprintf(stderr, "%d: Error: Variable %s is not defined\n",line, name.c_str());
+        fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, name.c_str());
         exit(EXIT_FAILURE);
     }
     if(!variabile.isCompatibleValue(variabile.getType(name),value)){
@@ -571,7 +586,7 @@ void checkArr(const string& name, const string& value, int index, int line){
            exit(EXIT_FAILURE); 
     }
     if(variabile.isConstant(name)){
-        fprintf(stderr, "%d: Error: Constant %s can't be changed\n",line, name.c_str());
+        fprintf(stderr, "%d: Error: Constant '%s' can't be changed\n",line, name.c_str());
         exit(EXIT_FAILURE);
     }
     variabile.assignValueArr(name, value, index, line);
@@ -579,7 +594,7 @@ void checkArr(const string& name, const string& value, int index, int line){
 
 void callFunction(const string&name, vector<string> args, int line){
     if(!variabile.isFunction(name)){
-         fprintf(stderr, "%d: Error: Variable %s is not defined as a function\n",line, name.c_str());
+         fprintf(stderr, "%d: Error: Variable '%s' is not defined or is not a function\n",line, name.c_str());
          exit(EXIT_FAILURE);
     }
     variabile.checkArgs(name, args, line);
@@ -607,7 +622,7 @@ void verificareCorectitudineVal(const string& value, const string& type, int lin
 
 void verificareCorectitudineId(const string& id, int line){
     if(!variabile.existsVar(id)){
-        fprintf(stderr, "%d: Error: Variable %s is not defined\n",line, id.c_str());
+        fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, id.c_str());
         exit(EXIT_FAILURE);
     }
     string type = variabile.getType(id);
@@ -620,6 +635,33 @@ void verificareCorectitudineId(const string& id, int line){
     }
 }
 
+// void verificareCorectitudineFunct(const string& id, int line){
+//     // if(!variabile.existsVar(id)){
+//     //     fprintf(stderr, "%d: Error: Function '%s' is not defined\n",line, id.c_str());
+//     //     exit(EXIT_FAILURE);
+//     // }
+//     // if(!variabile.isFunction(id)){
+//     //     fprintf(stderr, "%d: Error: Var '%s' is not a function\n",line, id.c_str());
+//     //     exit(EXIT_FAILURE);
+//     // }
+//     string type = variabile.getType(id);
+//     if(exprflg == "none"){
+//         exprflg = type;
+//     }
+//     else if(exprflg != type){
+//         fprintf(stderr, "%d: Syntax error: casting is not support\n",line);
+//         exit(EXIT_FAILURE);
+//     }
+// }
+
+string getFuncValue(const string& id){
+    const string type = variabile.getType(id);
+    if(type == "integer") return "12";
+    else if(type == "real") return "12.0";
+    else if(type == "boolean") return "true";
+    else if(type == "string") return "\"sir\"";
+    return "\'c\'";
+}
 
 
 void initTable() {
@@ -628,11 +670,9 @@ void initTable() {
         fprintf(stderr, "Error opening file.\n");
     }
     fprintf(file, 
-    "%-20s       %-20s      %-20s        %-20s            %-20s             %-20s %-20s",
-    "ID",                 "TIP",       "VAL",              "SCOPE ",             "Location"    ,          "Var Type", "Function params");
+    "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s %-20s",
+    "ID","TIP","VAL", "SCOPE","Location","Var_Type", "Function params");
     fprintf(file, "\n");
-
-    // Close the file
     fclose(file);
 }
 

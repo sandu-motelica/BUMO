@@ -187,7 +187,7 @@ void VarList::addVarToTable(){
 
  for (Var& v : vars) {
     if(v.location_type!="func_param") {
-        fprintf(file, "%-20s          %-20s        %-20s       %-20s         %-20s             %-20s", 
+        fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
         v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
         //Print function params
 

@@ -1,15 +1,17 @@
-ID                         TIP                       VAL                         SCOPE                           Location                         Var Type             Function params     
-y                             integer                     1                          main                         global                           var                 
-i                             boolean                     true                       main                         global                           var                 
-a                             string                      "integer"                  main                         global                           var                 
-lis                           integer                                                main                         global                           array               
-z                             real                        1.000000                   main                         global                           var                 
-zuma                          integer                     30                         main                         global                           var                 
-list                          char                                                   main                         global                           array               
-e                             boolean                     true                       main                         global                           constant            
-gig                           string                      "antonio"                  impl                         global                           var                 
-gig5                          string                      "antonio"                  impl                         global                           var                 
-impl                          integer                                                main                         location_type                    function            leg:integer count:real 
-gig1                          string                      "antonio"                  test                         global                           var                 
-gig3                          string                      "text"                     test                         global                           var                 
-test                          integer                                                main                         location_type                    function            leg2:integer count2:real 
+ID                          TIP                       VAL                         SCOPE                           Location                     Var_Type             Function params     
+y                           integer                   1                           main                            global                       var                 
+i                           boolean                   true                        main                            global                       var                 
+a                           string                    "integer"                   main                            global                       var                 
+lis                         integer                                               main                            global                       array               
+z                           real                      1.000000                    main                            global                       var                 
+zuma                        integer                   30                          main                            global                       var                 
+list                        char                                                  main                            global                       array               
+e                           boolean                   true                        main                            global                       constant            
+continut                    string                    "antonio"                   impl                            global                       var                 
+car                         char                      'c'                         impl                            global                       var                 
+u                           integer                   5                           impl                            global                       var                 
+t                           integer                   19                          impl                            global                       var                 
+impl                        char                                                  main                            location_type                function            leg:integer count:real 
+nume                        string                    "antonia"                   test                            global                       var                 
+prenume                     string                    "daria"                     test                            global                       var                 
+test                        integer                                               main                            location_type                function            number:integer avg:real 
