@@ -14,7 +14,7 @@ zuma:integer:=-23+3*2-(-12);
 list:char[20] := {'a','b'};  
 const e:boolean := true; 
 functions:
-function test(leg:integer,count:real):integer
+function impl(leg:integer,count:real):integer
   gig:string:="text";
   gig5:string:="antonio";
 begin
@@ -22,7 +22,7 @@ begin
   return 'a';
 end;
 
-function test4(leg2:integer,count2:real):integer
+function test(leg2:integer,count2:real):integer
   gig1:string:="antonio";
   gig3:string:="text";
 begin

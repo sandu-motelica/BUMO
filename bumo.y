@@ -74,17 +74,17 @@ declaration_block :
 
 types_declarations:
     /*empty*/
-    | class_declaration types_declarations {counter++;}
+    | class_declaration types_declarations
     ;
 
 var_declarations:
     /*empty*/
-    | var_declaration var_declarations {counter++;}
+    | var_declaration var_declarations 
     ;
 
 function_declarations:
     /*empty*/
-    | function_declaration function_declarations {counter++;}
+    | function_declaration function_declarations 
     ;
 
 class_declaration:
@@ -122,7 +122,7 @@ var_declaration:
 
 
 function_declaration:
-    FUNCTION IDENTIFIER '(' params ')' ':' TYPE  function_block ';' { scope=$2; variabile.addScopeVars(counter,$2);  variabile.addScopeParams($2); { if(!variabile.declareFunc($2, $7,"main")){
+    FUNCTION IDENTIFIER '(' params ')' ':' TYPE  function_block ';' {variabile.addScopeVars(counter,$2);  variabile.addScopeParams($2); { if(!variabile.declareFunc($2, $7,"main")){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $2);
             exit(EXIT_FAILURE); }}
             counter = 0;}  
@@ -147,7 +147,7 @@ param:
     ;
 
 function_block:
-    var_declarations BGIN statements_block END {
+    function_declarations_block BGIN statements_block END {
         if (!isReturn) {
             fprintf(stderr, "%d: Error: Function must have a return statement\n", yylineno);
             exit(EXIT_FAILURE);
@@ -156,6 +156,12 @@ function_block:
         scope = "main";
     }
     ;
+
+function_declarations_block:
+    /*empty*/
+    | var_declaration function_declarations_block {counter++;}
+    ;
+
 
 
 statements_block:
@@ -211,7 +217,6 @@ eval_function:
     EVAL '(' expr ')'   { $$ = $3;}
     ;
 
-
 tpof_function:
     TYPEOF '(' expr ')'   {
                              if(variabile.isCompatibleValue("integer", $3)) $$ = strdup("integer");
@@ -219,8 +224,6 @@ tpof_function:
                              if(variabile.isCompatibleValue("boolean", $3)) $$ = strdup("boolean");     
                           }
     ;
-
-
 
 /************** control statements ****************/
 /**************************************************/
