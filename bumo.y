@@ -21,6 +21,7 @@ bool toBool(const string& val);
 int verifBool(const string& val);
 void verificareCorectitudineVal(const string& value, const string& type, int line);
 void verificareCorectitudineId(const string& id, int line);
+void verificareCorectitudineArray(const string& id, int index, int line);
 void verificareCorectitudineFunct(const string& id, int line);
 void verificareCorectitudineClassId(const string& class_name, const string& class_var, int line);
 string getFuncValue(const string& id);
@@ -151,7 +152,7 @@ var_declaration:
             exit(EXIT_FAILURE); }
         variabile.initClassData($1, $3);
     }
-    | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
+    | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareArr($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
     | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($1, $3, arr ,false, scope,$4,yylineno);
@@ -183,7 +184,7 @@ params:
     ;
 
 param_list:
-    param
+    param 
     | param_list ',' param 
     ;
 
@@ -245,7 +246,7 @@ statement:
     ;
 
 statement_call_function:
-    IDENTIFIER '(' args_list ')'  { callFunction($1,arr,yylineno); arr.clear(); }
+    IDENTIFIER '(' args_list ')'  {  callFunction($1,arr,yylineno); arr.clear(); }
     ;
 
 call_function:
@@ -298,7 +299,7 @@ control_statements_block:
     BGIN statements_block END ';'
 
 condition:
-    relativ_condition {cout<<"Conditie: "<<$1<<endl;}
+    relativ_condition { cout<<"Conditie: "<<$1<<endl;}
     ;
 
 list: // verificarea cazului cu virgula in plus
@@ -466,9 +467,26 @@ expr: expr ADD expr {
   |  INT_VALUE { verificareCorectitudineVal(strdup($1),"integer", yylineno); $$=$1;}
   |  BOOL_VALUE { verificareCorectitudineVal(strdup($1),"boolean", yylineno); $$=$1;}
   |  REAL_VALUE { verificareCorectitudineVal(strdup($1),"real", yylineno); $$=$1;}
-  |  IDENTIFIER { verificareCorectitudineId(strdup($1), yylineno);  $$ = strdup(variabile.getValue($1).c_str());}
+  |  IDENTIFIER { verificareCorectitudineId(strdup($1), yylineno);  
+                  string temp = variabile.getValue($1);
+                  if(temp == ""){
+                    fprintf(stderr, "%d: Error: Use of uninitialized variable '%s'\n",yylineno, $1);
+                    exit(EXIT_FAILURE); 
+                  }
+                  $$ = strdup(temp.c_str());
+                  }
   |  call_function { verificareCorectitudineId(strdup($1), yylineno); $$ = strdup(getFuncValue($1).c_str());}
-  |  IDENTIFIER '~' IDENTIFIER { verificareCorectitudineClassId($1,$3,yylineno);  $$ = strdup(variabile.getClassIdValue($1, $3).c_str()); }
+  |  IDENTIFIER '~' IDENTIFIER { verificareCorectitudineClassId($1,$3,yylineno); 
+                                string temp = variabile.getClassIdValue($1, $3);
+                                if(temp == ""){
+                                  fprintf(stderr, "%d: Error: Use of uninitialized variable '%s~%s'\n",yylineno, $1,$3);
+                                  exit(EXIT_FAILURE); 
+                                }
+                                 $$ = strdup(temp.c_str());
+                                }
+  |  IDENTIFIER dimensiune { verificareCorectitudineArray($1,$2, yylineno);  $$ = strdup(variabile.getArrayValue($1, $2).c_str());}
+//   |  IDENTIFIER '~' IDENTIFIER dimensiune { verificareCorectitudineClassId($1,$3,yylineno);  $$ = strdup(variabile.getClassIdValue($1, $3).c_str()); }
+
   ;
     
 
@@ -670,6 +688,21 @@ void verificareCorectitudineId(const string& id, int line){
         exit(EXIT_FAILURE);
     }
     string type = variabile.getType(id);
+    if(exprflg == "none"){
+        exprflg = type;
+    }
+    else if(exprflg != type){
+        fprintf(stderr, "%d: Syntax error: casting is not support\n",line);
+        exit(EXIT_FAILURE);
+    }
+}
+void verificareCorectitudineArray(const string& id, int index, int line){
+    if(!variabile.existsVar(id)){
+        fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, id.c_str());
+        exit(EXIT_FAILURE);
+    }
+    
+    string type = variabile.getArrayType(id,index,line);
     if(exprflg == "none"){
         exprflg = type;
     }

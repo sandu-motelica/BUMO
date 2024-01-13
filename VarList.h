@@ -23,6 +23,7 @@ class VarList {
    
     public:
     bool declareVariable(const string& name,const string& type,bool constant,const string& scope);
+    bool declareArr(const string& name,const string& type,bool constant,const string& scope);
     void initClassData(const string& name,const string& type);
     bool declareFunc(const string& name,const string& type,const string& scope);
     bool declareClass(const string& name);
@@ -32,6 +33,8 @@ class VarList {
     void addValuesToArr(const string& name, vector<string> values, int size);
     void assignValueArr(const string& name,const string& value, int index, int line);
     bool isFunction(const string& name);
+    string getArrayType(const string& name, int index,int line);
+    string getArrayValue(const string& name, int index);
     void assignClassEl(const string& class_name,const string& class_var, const string& value, int line);
     bool existsClassId(const string& class_name, const string& class_var);
     void checkArgs(const string& name, vector<string> args,int line);

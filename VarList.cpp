@@ -26,6 +26,19 @@ bool VarList::declareVariable(const string& name,const string& type, bool ct, co
     return true;  
 }
 
+bool VarList::declareArr(const string& name,const string& type, bool ct, const string& scope){
+    for(const Var& v: vars){
+        if(name == v.name) {
+            return false;
+        }
+    }
+    string location_type = scope=="main" ? "global" : scope;
+    Var i = {"arr",type,name,ct,scope,location_type};
+    vars.push_back(i); 
+    
+    return true;  
+}
+
 void VarList::initClassData(const string& name, const string& type){
     for(const Var& v: vars){
         if(type == v.location_type) {   
@@ -55,6 +68,29 @@ void VarList::assignClassEl(const string& class_name, const string& class_var, c
         fprintf(stderr, "%d: Error: Variable '%s~%s' is not defined\n",line, class_name.c_str(),class_var.c_str());
         exit(EXIT_FAILURE); 
     }
+}
+
+string VarList::getArrayType(const string& name, int index,int line){
+    bool exist = false;
+    for(Var& v: vars){
+        if(name == v.name) {
+            if(v.var_type != "arr"){
+                fprintf(stderr, "%d: Error: Variable %s is not an array\n",line, v.name.c_str());
+                exit(EXIT_FAILURE); 
+            }
+            if(v.arr.size() <= index){
+                fprintf(stderr, "%d: Error: Invalid index of array '%s'\n",line, v.name.c_str());
+                exit(EXIT_FAILURE); 
+            }
+            exist = true;
+            return v.type;
+        }    
+    }
+    if(!exist){
+        fprintf(stderr, "%d: Error: Array '%s' is not defined\n",line, name.c_str());
+        exit(EXIT_FAILURE); 
+    }
+    return "";
 }
 
 
@@ -184,6 +220,15 @@ string VarList::getValue(const string& name){
     return "";
 }
 
+string VarList::getArrayValue(const string& name, int index){
+    for (Var& v : vars) {
+        if (name == v.name) {
+            return v.arr[index];
+        }
+    }
+    return "";
+}
+
 string VarList::getClassIdValue(const string& class_name, const string& class_var){
      for (Var& v : vars) {
         if (class_var == v.name && class_name == v.scope) {
@@ -304,14 +349,18 @@ void VarList::addLocationType(int count, const string& location){
     i--;
     while (i != vars.begin() && count > 0)
     {
-        i->location_type = location;
-        cout<<count<< " "<<i->name<<" "<< i->location_type<<endl;
-        count--;
+        if(i->location_type != "func_param"){
+            i->location_type = location;
+            count--;
+        }
+        cout<<"clasa: "<<count<< " "<<i->name<<" "<<i->scope<<" "<< i->location_type<<endl;
         i--;
         if(count > 0 && i == vars.begin()){
-            i->location_type = location;
-            cout<<count<< " "<<i->name<<" "<< i->location_type<<endl;
-            count--;
+            if(i->location_type != "func_param"){
+                i->location_type = location;
+                count--;
+            }
+        cout<<"Clasa: "<<count<< " "<<i->name<<" "<<i->scope<<" "<< i->location_type<<endl;
         }
     } 
     
