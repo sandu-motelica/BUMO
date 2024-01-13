@@ -2,6 +2,16 @@
 
 using namespace std;
 
+string getArrValues(int arrSize, const vector<string> arr) {
+    string result;
+
+    for (const auto& element : arr) {
+        result = result + element + " ";
+    }
+
+    return result;
+}
+
 
 bool VarList::declareVariable(const string& name,const string& type, bool ct, const string& scope){
     for(const Var& v: vars){
@@ -197,8 +207,14 @@ void VarList::addVarToTable(){
 
  for (Var& v : vars) {
     if((v.location_type!="func_param" && v.var_type!="class") &&( v.location_type=="global" || v.location_type=="class")) {
-        fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
-        v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+        if( v.arrSize ==0) {
+            fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
+            v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+        }
+        else {
+            fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
+            v.name.c_str(),v.type.c_str(),getArrValues(v.arrSize, v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+        }
         //Print function params
 
  for (Var& param : vars) {
@@ -215,10 +231,6 @@ void VarList::addVarToTable(){
     }
     fclose(file);
 }
-
-
-
-
 
 void VarList::addScopeParams(const string& scope){
        for (Var& v : vars) {
@@ -291,3 +303,6 @@ bool VarList::declareClass(const string& name){
 VarList::~VarList() {
     vars.clear();
 }
+
+
+//Helpers
