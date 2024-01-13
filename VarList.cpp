@@ -196,13 +196,13 @@ void VarList::addVarToTable(){
     }
 
  for (Var& v : vars) {
-    if(v.location_type!="func_param" && v.var_type!="class") {
+    if((v.location_type!="func_param" && v.var_type!="class") &&( v.location_type=="global" || v.location_type=="class")) {
         fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
         v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
         //Print function params
 
  for (Var& param : vars) {
-    if(param.location_type=="func_param" && param.scope==v.name) {
+    if(param.location_type=="func_param" && param.scope==v.name ) {
         fprintf(file, "%s:%s ", 
         param.name.c_str(), param.type.c_str()
         );
@@ -270,7 +270,7 @@ bool VarList::declareFunc(const string& name,const string& type,const string& sc
         }
     }
     string location_type = scope=="main" ? "global" : scope;
-    Var i = {"function",type,name,false,scope,"location_type"};//update location_type (class implementation)
+    Var i = {"function",type,name,false,scope,"global"};//update location_type (class implementation)
     vars.push_back(i); 
     
     return true;  

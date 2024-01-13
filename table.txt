@@ -1,7 +1,4 @@
 ID                          TIP                       VAL                         SCOPE                           Location                     Var_Type             Function params     
-y                           integer                                               main                            antonio                      var                 
-hh                          integer                                               main                            antonio                      var                 
-numarar                     integer                                               main                            antonio                      function            
 i                           boolean                   false                       main                            global                       var                 
 ty                          antonio                                               main                            global                       var                 
 y                           integer                                               ty                              class                        var                 
@@ -14,7 +11,7 @@ zuma                        integer                   41                        
 list                        char                                                  main                            global                       arr                 
 e                           boolean                   true                        main                            global                       constant            
 car                         char                      'a'                         impl                            global                       var                 
-impl                        char                                                  main                            location_type                function            leg:integer count:real 
+impl                        char                                                  main                            global                       function            leg:integer count:real 
 nume                        string                    "antonia"                   test                            global                       var                 
 prenume                     string                    "daria"                     test                            global                       var                 
-test                        integer                                               main                            location_type                function            number:integer avg:real 
+test                        integer                                               main                            global                       function            number:integer avg:real 
