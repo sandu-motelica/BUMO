@@ -4,7 +4,7 @@ class antonio
 begin
 vars:
   y:integer;
-  hh:integer;
+  hh:integer[4]:={50,60,70};
 methods:
   function numarar():integer
   begin
@@ -42,9 +42,8 @@ end;
 
 begin
   lis[2]:=23;
-  zuma := zuma + test(12, 3.0);
   ty~y:=15;
-  ty~hh:=1125;
+  zuma := zuma + test(12, 3.0) + ty~y;
 
   test(13,4.04);
   list[0] := impl(2, 4.3);

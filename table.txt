@@ -2,7 +2,7 @@ ID                          TIP                       VAL                       
 i                           boolean                   false                       main                            global                       var                 
 ty                          antonio                                               main                            global                       var                 
 y                           integer                   15                          ty                              class                        var                 
-hh                          integer                   1125                        ty                              class                        var                 
+hh                          integer                   50 60 70                    ty                              class                        arr                 
 numarar                     integer                                               ty                              class                        function            
 a                           string                    "integer"                   main                            global                       var                 
 lis                         integer                   1 3 23                      main                            global                       arr                 

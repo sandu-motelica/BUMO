@@ -32,7 +32,8 @@ class VarList {
     void addValuesToArr(const string& name, vector<string> values, int size);
     void assignValueArr(const string& name,const string& value, int index, int line);
     bool isFunction(const string& name);
-    void checkClassIsDecl(const string& class_name,const string& class_var, const string& value, int line);
+    void assignClassEl(const string& class_name,const string& class_var, const string& value, int line);
+    bool existsClassId(const string& class_name, const string& class_var);
     void checkArgs(const string& name, vector<string> args,int line);
     void addVarToTable();
     void addScopeParams(const string& scope);
@@ -40,6 +41,7 @@ class VarList {
     void addLocationType(int count, const string& location);
     bool existsVar(const string& name);
     string getValue(const string& name);
+    string getClassIdValue(const string& class_name, const string& class_var);
     string getType(const string& name);
     bool isConstant(const string& name);
     ~VarList();

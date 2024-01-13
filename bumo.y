@@ -22,6 +22,7 @@ int verifBool(const string& val);
 void verificareCorectitudineVal(const string& value, const string& type, int line);
 void verificareCorectitudineId(const string& id, int line);
 void verificareCorectitudineFunct(const string& id, int line);
+void verificareCorectitudineClassId(const string& class_name, const string& class_var, int line);
 string getFuncValue(const string& id);
 vector<string> arr;
 bool isReturn = false; 
@@ -239,7 +240,7 @@ return_statement:
 statement:     
     IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
-    | IDENTIFIER '~' IDENTIFIER ASSIGN valoare ';' {  variabile.checkClassIsDecl($1,$3,$5,yylineno);  }
+    | IDENTIFIER '~' IDENTIFIER ASSIGN valoare ';' {  variabile.assignClassEl($1,$3,$5,yylineno);  }
     | statement_call_function ';'
     ;
 
@@ -467,7 +468,7 @@ expr: expr ADD expr {
   |  REAL_VALUE { verificareCorectitudineVal(strdup($1),"real", yylineno); $$=$1;}
   |  IDENTIFIER { verificareCorectitudineId(strdup($1), yylineno);  $$ = strdup(variabile.getValue($1).c_str());}
   |  call_function { verificareCorectitudineId(strdup($1), yylineno); $$ = strdup(getFuncValue($1).c_str());}
-  |  IDENTIFIER '~' IDENTIFIER {  }
+  |  IDENTIFIER '~' IDENTIFIER { verificareCorectitudineClassId($1,$3,yylineno);  $$ = strdup(variabile.getClassIdValue($1, $3).c_str()); }
   ;
     
 
@@ -669,6 +670,20 @@ void verificareCorectitudineId(const string& id, int line){
         exit(EXIT_FAILURE);
     }
     string type = variabile.getType(id);
+    if(exprflg == "none"){
+        exprflg = type;
+    }
+    else if(exprflg != type){
+        fprintf(stderr, "%d: Syntax error: casting is not support\n",line);
+        exit(EXIT_FAILURE);
+    }
+}
+void verificareCorectitudineClassId(const string& class_name, const string& class_var, int line){
+    if(!variabile.existsClassId(class_name,class_var)){
+        fprintf(stderr, "%d: Error: Variable '%s~%s' is not defined\n",line, class_name.c_str(), class_var.c_str());
+        exit(EXIT_FAILURE);
+    }
+    string type = variabile.getType(class_var);
     if(exprflg == "none"){
         exprflg = type;
     }

@@ -35,7 +35,7 @@ void VarList::initClassData(const string& name, const string& type){
     }
 }
 
-void VarList::checkClassIsDecl(const string& class_name, const string& class_var, const string& val, int line) {
+void VarList::assignClassEl(const string& class_name, const string& class_var, const string& val, int line) {
     bool exist = false;
     for(Var& v: vars){
         if(class_name == v.scope && class_var == v.name) {
@@ -52,10 +52,11 @@ void VarList::checkClassIsDecl(const string& class_name, const string& class_var
         }    
     }
     if(!exist){
-        fprintf(stderr, "%d: Error: Variable '%s.%s' is not defined\n",line, class_name.c_str(),class_var.c_str());
+        fprintf(stderr, "%d: Error: Variable '%s~%s' is not defined\n",line, class_name.c_str(),class_var.c_str());
         exit(EXIT_FAILURE); 
     }
 }
+
 
 int VarList::IsDeclareVariable(const string& name, const string& value){
     for(const Var& v: vars){
@@ -157,6 +158,16 @@ bool VarList::existsVar(const string& name){
     return false; 
 }
 
+bool VarList::existsClassId(const string& class_name, const string& class_var){
+    for(const Var& v: vars){
+        if(class_var == v.name && class_name == v.scope) {
+            return true;
+        }
+    }
+    return false; 
+}
+
+
 void VarList::assignValue(const string& name, const string& value){
     for (Var& v : vars) {
         if (name == v.name) {
@@ -172,6 +183,16 @@ string VarList::getValue(const string& name){
     }
     return "";
 }
+
+string VarList::getClassIdValue(const string& class_name, const string& class_var){
+     for (Var& v : vars) {
+        if (class_var == v.name && class_name == v.scope) {
+            return v.value;
+        }
+    }
+    return "";
+}
+
 string VarList::getType(const string& name){
     for (Var& v : vars) {
         if (name == v.name) {
