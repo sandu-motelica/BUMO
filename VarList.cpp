@@ -26,7 +26,16 @@ bool VarList::declareVariable(const string& name,const string& type, bool ct, co
     return true;  
 }
 
-void VarList::checkClassIsDecl(const string& class_name, const string& class_var, string& val, int line){
+void VarList::initClassData(const string& name, const string& type){
+    for(const Var& v: vars){
+        if(type == v.location_type) {   
+            Var i = {v.var_type, v.type, v.name, v.constant, name, "class",v.value,v.arr,v.arrSize};
+            vars.push_back(i);   
+        }
+    }
+}
+
+void VarList::checkClassIsDecl(const string& class_name, const string& class_var,const string& val, int line){
     bool exist = false;
     for(const Var& v: vars){
         if(class_name == v.scope && class_var == v.name) {
@@ -39,7 +48,7 @@ void VarList::checkClassIsDecl(const string& class_name, const string& class_var
                 fprintf(stderr, "%d: Error: Constant '%s' can't be changed\n",line, class_var.c_str());
                 exit(EXIT_FAILURE);
             }
-            v.value = val;
+         v.value = val;
         }    
     }
     if(!exist){

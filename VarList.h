@@ -32,7 +32,7 @@ class VarList {
     void addValuesToArr(const string& name, vector<string> values, int size);
     void assignValueArr(const string& name,const string& value, int index, int line);
     bool isFunction(const string& name);
-    void checkClassIsDecl(const string& class_name,const string& class_var, string& value, int line);
+    void checkClassIsDecl(const string& class_name,const string& class_var, const string& value, int line);
     void checkArgs(const string& name, vector<string> args,int line);
     void addVarToTable();
     void addScopeParams(const string& scope);
