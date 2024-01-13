@@ -155,7 +155,7 @@ void VarList::addValuesToArr(const string& name, vector<string> values, int size
     for(Var& v: vars){
        if (name == v.name) {
             v.arrSize = size;
-            v.var_type="array";
+            v.var_type="arr";
             for(const string& s: values){
                 v.arr.push_back(s);
                 cout << s <<" ";
@@ -169,7 +169,7 @@ void VarList::assignValueArr(const string& name,const string& value, int index, 
     if (name == v.name) {
         cout << name << " " << index << " " << v.arrSize << endl;
         if (v.arrSize < index) {
-            fprintf(stderr, "%d: Error: Array index '%d' out of bounds.\n", line, index);
+            fprintf(stderr, "%d: Error: arr index '%d' out of bounds.\n", line, index);
             exit(EXIT_FAILURE);
         }
         if (v.arr.size() < index) {

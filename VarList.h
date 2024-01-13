@@ -6,7 +6,7 @@
 using namespace std;
 
 struct Var {
-    string var_type; // var | func | class | array
+    string var_type; // var | func | class | arr
     string type; // int | string | floar | boolean
     string name;
     bool constant;

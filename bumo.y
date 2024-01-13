@@ -23,7 +23,7 @@ void verificareCorectitudineVal(const string& value, const string& type, int lin
 void verificareCorectitudineId(const string& id, int line);
 void verificareCorectitudineFunct(const string& id, int line);
 string getFuncValue(const string& id);
-vector<string> array;
+vector<string> arr;
 bool isReturn = false; 
 string return_value = "none";
 string scope = "main";
@@ -153,11 +153,11 @@ var_declaration:
     | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
-    | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($1, $3, array ,false, scope,$4,yylineno);
-                                                                 array.clear(); }
+    | IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($1, $3, arr ,false, scope,$4,yylineno);
+                                                                 arr.clear(); }
     | IDENTIFIER ':' TYPE ASSIGN valoare ';' { checkVarDecl($1,$3,$5,false,scope,yylineno); }
-    | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($2, $4, array ,true, scope,$5,yylineno);
-                                                                 array.clear(); }
+    | CONST IDENTIFIER ':' TYPE dimensiune ASSIGN '{' list '}' ';' { declArr($2, $4, arr ,true, scope,$5,yylineno);
+                                                                 arr.clear(); }
     | CONST IDENTIFIER ':' TYPE ASSIGN valoare ';' { checkVarDecl($2,$4,$6,true,scope,yylineno); }
     ;
 
@@ -244,11 +244,11 @@ statement:
     ;
 
 statement_call_function:
-    IDENTIFIER '(' args_list ')'  { callFunction($1,array,yylineno); array.clear(); }
+    IDENTIFIER '(' args_list ')'  { callFunction($1,arr,yylineno); arr.clear(); }
     ;
 
 call_function:
-    IDENTIFIER '(' args_list ')'  { $$ = $1; callFunction($1,array,yylineno); array.clear(); }
+    IDENTIFIER '(' args_list ')'  { $$ = $1; callFunction($1,arr,yylineno); arr.clear(); }
     ;
 
 args_list:
@@ -262,7 +262,7 @@ args:
     ;
 
 arg:
-    valoare { array.push_back($1); }
+    valoare { arr.push_back($1); }
     ;
 
 
@@ -301,8 +301,8 @@ condition:
     ;
 
 list: // verificarea cazului cu virgula in plus
-    valoare { array.push_back($1); }
-    | list ',' valoare { array.push_back($3); }
+    valoare { arr.push_back($1); }
+    | list ',' valoare { arr.push_back($3); }
     ;
 
 dimensiune:
@@ -604,7 +604,7 @@ void declArr(const string& name, const string& type, vector<string> values , boo
     }
 
     if(values.size() > size){
-        fprintf(stderr, "%d: Error: Array '%s' index exceeds size '%d'.\n",line, name.c_str(),size);
+        fprintf(stderr, "%d: Error: arr '%s' index exceeds size '%d'.\n",line, name.c_str(),size);
            exit(EXIT_FAILURE); 
     }
 

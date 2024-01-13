@@ -8,10 +8,10 @@ y                           integer                                             
 hh                          integer                                               ty                              class                        var                 
 numarar                     integer                                               ty                              class                        function            
 a                           string                    "integer"                   main                            global                       var                 
-lis                         integer                                               main                            global                       array               
+lis                         integer                                               main                            global                       arr                 
 z                           real                      1.000000                    main                            global                       var                 
 zuma                        integer                   41                          main                            global                       var                 
-list                        char                                                  main                            global                       array               
+list                        char                                                  main                            global                       arr                 
 e                           boolean                   true                        main                            global                       constant            
 car                         char                      'a'                         impl                            global                       var                 
 impl                        char                                                  main                            location_type                function            leg:integer count:real 
