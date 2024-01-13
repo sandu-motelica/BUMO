@@ -1,14 +1,14 @@
 ID                          TIP                       VAL                         SCOPE                           Location                     Var_Type             Function params     
 i                           boolean                   false                       main                            global                       var                 
 ty                          antonio                                               main                            global                       var                 
-y                           integer                                               ty                              class                        var                 
-hh                          integer                                               ty                              class                        var                 
+y                           integer                   15                          ty                              class                        var                 
+hh                          integer                   1125                        ty                              class                        var                 
 numarar                     integer                                               ty                              class                        function            
 a                           string                    "integer"                   main                            global                       var                 
-lis                         integer                                               main                            global                       arr                 
+lis                         integer                   1 3 23                      main                            global                       arr                 
 z                           real                      1.000000                    main                            global                       var                 
 zuma                        integer                   41                          main                            global                       var                 
-list                        char                                                  main                            global                       arr                 
+list                        char                      'c' 'b'                     main                            global                       arr                 
 e                           boolean                   true                        main                            global                       constant            
 car                         char                      'a'                         impl                            global                       var                 
 impl                        char                                                  main                            global                       function            leg:integer count:real 

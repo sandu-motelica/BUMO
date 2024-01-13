@@ -35,9 +35,9 @@ void VarList::initClassData(const string& name, const string& type){
     }
 }
 
-void VarList::checkClassIsDecl(const string& class_name, const string& class_var,const string& val, int line){
+void VarList::checkClassIsDecl(const string& class_name, const string& class_var, const string& val, int line) {
     bool exist = false;
-    for(const Var& v: vars){
+    for(Var& v: vars){
         if(class_name == v.scope && class_var == v.name) {
             exist = true;
             if(!isCompatibleValue(v.type,val)){
@@ -48,7 +48,7 @@ void VarList::checkClassIsDecl(const string& class_name, const string& class_var
                 fprintf(stderr, "%d: Error: Constant '%s' can't be changed\n",line, class_var.c_str());
                 exit(EXIT_FAILURE);
             }
-         v.value = val;
+        v.value = val;
         }    
     }
     if(!exist){

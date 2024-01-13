@@ -18,7 +18,6 @@ vars:
 
 i:boolean := true;
 ty:antonio := new antonio();
-ty~y:=15;
 a:string := "asdf";
 lis:integer[5] := {1,3};  
 z:real:=3.0+1.0*2.0-4.0;
@@ -44,6 +43,8 @@ end;
 begin
   lis[2]:=23;
   zuma := zuma + test(12, 3.0);
+  ty~y:=15;
+  ty~hh:=1125;
 
   test(13,4.04);
   list[0] := impl(2, 4.3);
