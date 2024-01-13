@@ -16,15 +16,27 @@ bool VarList::declareVariable(const string& name,const string& type, bool ct, co
     return true;  
 }
 
-void VarList::initClassData(const string& name, const string& type){
+void VarList::checkClassIsDecl(const string& class_name, const string& class_var, string& val, int line){
+    bool exist = false;
     for(const Var& v: vars){
-        if(type == v.location_type) {   
-            Var i = {v.var_type, v.type, v.name, v.constant, name, "class",v.value,v.arr,v.arrSize};
-            vars.push_back(i);   
-        }
+        if(class_name == v.scope && class_var == v.name) {
+            exist = true;
+            if(!isCompatibleValue(v.type,val)){
+                fprintf(stderr, "%d: Error: Invalid value for variable of type %s\n",line, v.type.c_str());
+                exit(EXIT_FAILURE); 
+            }
+            if(isConstant(class_var)){
+                fprintf(stderr, "%d: Error: Constant '%s' can't be changed\n",line, class_var.c_str());
+                exit(EXIT_FAILURE);
+            }
+            v.value = val;
+        }    
+    }
+    if(!exist){
+        fprintf(stderr, "%d: Error: Variable '%s.%s' is not defined\n",line, class_name.c_str(),class_var.c_str());
+        exit(EXIT_FAILURE); 
     }
 }
-
 
 int VarList::IsDeclareVariable(const string& name, const string& value){
     for(const Var& v: vars){

@@ -23,6 +23,7 @@ void verificareCorectitudineVal(const string& value, const string& type, int lin
 void verificareCorectitudineId(const string& id, int line);
 void verificareCorectitudineFunct(const string& id, int line);
 string getFuncValue(const string& id);
+void checkClassIsDecl(const string& class_name,const string& class_var, const string& value, int line);
 vector<string> arr;
 bool isReturn = false; 
 string return_value = "none";
@@ -239,7 +240,7 @@ return_statement:
 statement:     
     IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
-    | IDENTIFIER '~' IDENTIFIER ';' {    }
+    | IDENTIFIER '~' IDENTIFIER ';' ASSIGN valoare ';' {  checkClassIsDecl($1,$3,$6,yylineno);  }
     | statement_call_function ';'
     ;
 
@@ -590,6 +591,7 @@ void checkVarIsDecl(const string& name,const string& value, int line){
     variabile.assignValue(name,value);
     cout<< name<< " "<<" "<< value<<endl;
 }
+
 
 void declArr(const string& name, const string& type, vector<string> values , bool ct, const string& scope,int size, int line){
     for(const string& s: values){
