@@ -23,7 +23,9 @@ class VarList {
    
     public:
     bool declareVariable(const string& name,const string& type,bool constant,const string& scope);
+    void initClassData(const string& name,const string& type);
     bool declareFunc(const string& name,const string& type,const string& scope);
+    bool declareClass(const string& name);
     bool isCompatibleValue(const string& type, const string& value);
     int IsDeclareVariable(const string& name, const string& value);
     void assignValue(const string& name, const string& value);
@@ -34,6 +36,7 @@ class VarList {
     void addVarToTable();
     void addScopeParams(const string& scope);
     void addScopeVars(int count, const string& scope);
+    void addLocationType(int count, const string& location);
     bool existsVar(const string& name);
     string getValue(const string& name);
     string getType(const string& name);

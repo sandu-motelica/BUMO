@@ -16,6 +16,16 @@ bool VarList::declareVariable(const string& name,const string& type, bool ct, co
     return true;  
 }
 
+void VarList::initClassData(const string& name, const string& type){
+    for(const Var& v: vars){
+        if(type == v.location_type) {   
+            Var i = {v.var_type, v.type, v.name, v.constant, name, "class",v.value,v.arr,v.arrSize};
+            vars.push_back(i);   
+        }
+    }
+}
+
+
 int VarList::IsDeclareVariable(const string& name, const string& value){
     for(const Var& v: vars){
         if(name == v.name) {
@@ -186,7 +196,7 @@ void VarList::addVarToTable(){
     }
 
  for (Var& v : vars) {
-    if(v.location_type!="func_param") {
+    if(v.location_type!="func_param" && v.var_type!="class") {
         fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
         v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
         //Print function params
@@ -224,10 +234,33 @@ void VarList::addScopeVars(int count, const string& scope){
     while (i != vars.begin() && count > 0)
     {
         i->scope = scope;
-        cout<<count<< " "<< i->scope<<endl;
+        cout<<count<< " "<<i->name<<" "<< i->scope<<endl;
         count--;
         i--;
+        if(count>0 && i == vars.begin()){
+            i->scope = scope;
+            cout<<count<< " "<<i->name<<" "<< i->scope<<endl;
+            count--;
+        }
     } 
+    
+}
+void VarList::addLocationType(int count, const string& location){
+    vector<Var>::iterator i = vars.end();
+    i--;
+    while (i != vars.begin() && count > 0)
+    {
+        i->location_type = location;
+        cout<<count<< " "<<i->name<<" "<< i->location_type<<endl;
+        count--;
+        i--;
+        if(count > 0 && i == vars.begin()){
+            i->location_type = location;
+            cout<<count<< " "<<i->name<<" "<< i->location_type<<endl;
+            count--;
+        }
+    } 
+    
 }
 
 bool VarList::declareFunc(const string& name,const string& type,const string& scope){
@@ -238,6 +271,18 @@ bool VarList::declareFunc(const string& name,const string& type,const string& sc
     }
     string location_type = scope=="main" ? "global" : scope;
     Var i = {"function",type,name,false,scope,"location_type"};//update location_type (class implementation)
+    vars.push_back(i); 
+    
+    return true;  
+}
+
+bool VarList::declareClass(const string& name){
+    for(const Var& v: vars){
+        if(name == v.name && v.var_type=="class") {
+            return false;
+        }
+    }
+    Var i = {"class",name, name, false,"main","global"};//update location_type (class implementation)
     vars.push_back(i); 
     
     return true;  

@@ -27,7 +27,8 @@ vector<string> array;
 bool isReturn = false; 
 string return_value = "none";
 string scope = "main";
-int counter = 0;
+int funct_counter = 0; 
+int class_counter = 0;
 string exprflg = "none";
 
 #define FILE_NAME "table.txt"
@@ -39,7 +40,7 @@ string exprflg = "none";
     float ftval;
     bool bval;
 }
-%token ASSIGN PROGR BGIN END CONST FUNCTION ADD SUB DIV MUL AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE EVAL TYPEOF RETURN CLASS TYPES VAR FUNCT
+%token ASSIGN PROGR BGIN END CONST FUNCTION ADD SUB DIV MUL AND NOT OR IF ELSE THEN EQ NQ GT LT LE GE FOR WHILE EVAL TYPEOF RETURN CLASS TYPES VAR FUNCT MET CONSTRUCTOR NEW
 %token<str> IDENTIFIER TYPE STRING_VALUE CHAR_VALUE BOOL_VALUE INT_VALUE REAL_VALUE
 %type<str> valoare expr call_function eval_function tpof_function
 %type<bval> relativ_expr relativ_condition
@@ -91,27 +92,64 @@ function_declarations:
     ;
 
 class_declaration:
-    CLASS IDENTIFIER BGIN class_block END ';'
+    CLASS IDENTIFIER BGIN class_block END ';' {
+        variabile.addLocationType(class_counter,$2); 
+        if(!variabile.declareClass($2)){
+            fprintf(stderr, "%d: Error: Variable '%s' is already defined\n",yylineno, $2);
+            exit(EXIT_FAILURE); 
+        }
+        class_counter = 0;
+
+    }
     ;
 
 class_block:
-    var_class_block function_class_block
+    VAR var_declarations_class MET methods_block CONSTRUCTOR construct_function {}
     ;
 
-var_class_block:
-    var_declaration 
-    | var_declaration var_class_block
-    ;
-function_class_block:
+var_declarations_class:
     /*empty*/
-    | function_declaration function_class_block
+    | var_declaration var_declarations_class {class_counter++;}
+    ;
+
+
+methods_block:
+    /*empty*/
+    | function_declaration methods_block {class_counter++;}
+    ;
+
+construct_function:
+    NEW '(' construct_args ')' ';'
+    ;
+
+construct_args:
+    /*empty*/
+    | construct_args_list
+    ;
+
+construct_args_list:
+    construct_arg
+    | construct_arg ',' construct_args_list
+    ;
+
+construct_arg:
+    IDENTIFIER ':' TYPE
     ;
 
 var_declaration:
     IDENTIFIER ':' TYPE ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
-    | IDENTIFIER ':' IDENTIFIER ';' {    }
+    | IDENTIFIER ':' IDENTIFIER ASSIGN NEW IDENTIFIER '(' ')' ';' {
+        if(strcmp($3,$6)!=0){
+            fprintf(stderr, "%d: Error: Invalid defined\n",yylineno);
+            exit(EXIT_FAILURE);
+        }
+        if(!variabile.declareVariable($1,$3,false,scope)){
+            fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
+            exit(EXIT_FAILURE); }
+        variabile.initClassData($1, $3);
+    }
     | IDENTIFIER ':' TYPE dimensiune ';' { if(!variabile.declareVariable($1, $3,false,scope)){
             fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
             exit(EXIT_FAILURE); }}
@@ -130,12 +168,12 @@ function_declaration:
                                                 fprintf(stderr, "%d: Error: Incompatible return type. The function should return '%s'.\n",yylineno, $7);
                                                 exit(EXIT_FAILURE);
                                             }
-                                            variabile.addScopeVars(counter,$2);  variabile.addScopeParams($2); 
+                                            variabile.addScopeVars(funct_counter,$2);  variabile.addScopeParams($2); 
                                             if(!variabile.declareFunc($2, $7,"main")){
                                                 fprintf(stderr, "%d: Error: Variable '%s' is already defined\n",yylineno, $2);
                                                 exit(EXIT_FAILURE); 
                                             }
-                                            counter = 0;}  
+                                            funct_counter = 0;}  
     ;
 
 params: 
@@ -149,7 +187,7 @@ param_list:
     ;
 
 param:
-    IDENTIFIER ':' TYPE { printf("parametri---%s\n", $1); 
+    IDENTIFIER ':' TYPE {     printf("parametri---%s\n", $1); 
                               if(!variabile.declareVariable($1, $3,false,"func_param")){
                                 fprintf(stderr, "%d: Error: Variable %s is already defined\n",yylineno, $1);
                                 exit(EXIT_FAILURE); }
@@ -169,7 +207,7 @@ function_block:
 
 function_declarations_block:
     /*empty*/
-    | var_declaration function_declarations_block {counter++;}
+    | var_declaration function_declarations_block {funct_counter++;}
     ;
 
 
@@ -201,6 +239,7 @@ return_statement:
 statement:     
     IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
     | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
+    | IDENTIFIER '~' IDENTIFIER ';' {    }
     | statement_call_function ';'
     ;
 
@@ -283,6 +322,8 @@ valoare:
                       exprflg = "none";
                     }
     | eval_function {$$ = $1; exprflg = "none";} 
+    | relativ_condition { if($1) $$ = strdup("true");
+                            else $$ = strdup("false"); }
     ;
 
 

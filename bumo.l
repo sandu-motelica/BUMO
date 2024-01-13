@@ -11,7 +11,10 @@
 "return" {return RETURN;}
 "begin" { return BGIN; }
 "end" { return END; }
-"var:" { return VAR; }
+"vars:" { return VAR; }
+"methods:" { return MET; }
+"constructor:" { return CONSTRUCTOR; }
+"new" { return NEW; }
 "types:" { return TYPES; }
 "functions:" { return FUNCT; }
 "true"|"false" {yylval.str = strdup(yytext); return BOOL_VALUE;}

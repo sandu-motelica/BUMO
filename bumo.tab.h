@@ -80,15 +80,18 @@ extern int yydebug;
     TYPES = 286,
     VAR = 287,
     FUNCT = 288,
-    IDENTIFIER = 289,
-    TYPE = 290,
-    STRING_VALUE = 291,
-    CHAR_VALUE = 292,
-    BOOL_VALUE = 293,
-    INT_VALUE = 294,
-    REAL_VALUE = 295,
-    MOD = 296,
-    UMINUS = 297
+    MET = 289,
+    CONSTRUCTOR = 290,
+    NEW = 291,
+    IDENTIFIER = 292,
+    TYPE = 293,
+    STRING_VALUE = 294,
+    CHAR_VALUE = 295,
+    BOOL_VALUE = 296,
+    INT_VALUE = 297,
+    REAL_VALUE = 298,
+    MOD = 299,
+    UMINUS = 300
   };
 #endif
 
@@ -96,14 +99,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 36 "bumo.y"
+#line 37 "bumo.y"
 
     char* str;
     int intval;
     float ftval;
     bool bval;
 
-#line 107 "bumo.tab.h"
+#line 110 "bumo.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

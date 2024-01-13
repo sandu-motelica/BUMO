@@ -1,16 +1,19 @@
 ID                          TIP                       VAL                         SCOPE                           Location                     Var_Type             Function params     
-y                           integer                   1                           main                            global                       var                 
-i                           boolean                   true                        main                            global                       var                 
+y                           integer                                               main                            antonio                      var                 
+hh                          integer                                               main                            antonio                      var                 
+numarar                     integer                                               main                            antonio                      function            
+i                           boolean                   false                       main                            global                       var                 
+ty                          antonio                                               main                            global                       var                 
+y                           integer                                               ty                              class                        var                 
+hh                          integer                                               ty                              class                        var                 
+numarar                     integer                                               ty                              class                        function            
 a                           string                    "integer"                   main                            global                       var                 
 lis                         integer                                               main                            global                       array               
 z                           real                      1.000000                    main                            global                       var                 
-zuma                        integer                   30                          main                            global                       var                 
+zuma                        integer                   41                          main                            global                       var                 
 list                        char                                                  main                            global                       array               
 e                           boolean                   true                        main                            global                       constant            
-continut                    string                    "antonio"                   impl                            global                       var                 
-car                         char                      'c'                         impl                            global                       var                 
-u                           integer                   5                           impl                            global                       var                 
-t                           integer                   19                          impl                            global                       var                 
+car                         char                      'a'                         impl                            global                       var                 
 impl                        char                                                  main                            location_type                function            leg:integer count:real 
 nume                        string                    "antonia"                   test                            global                       var                 
 prenume                     string                    "daria"                     test                            global                       var                 
