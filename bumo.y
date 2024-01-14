@@ -15,13 +15,13 @@ class VarList variabile;
 void checkVarDecl(const string& name,const string& type,const string& value, bool ct,const string& scope, int line);
 void checkVarIsDecl(const string& name,const string& value, int line);
 void declArr(const string& name, const string& type, vector<string> values , bool ct, const string& scope,int size, int line);
-void checkArr(const string& name, const string& value, int index, int line);
+void checkArr(const string& name,const string& var_type, const string& value, int index, int line);
 void callFunction(const string&name, vector<string> args, int line);
 bool toBool(const string& val);
 int verifBool(const string& val);
 void verificareCorectitudineVal(const string& value, const string& type, int line);
-void verificareCorectitudineId(const string& id, int line);
-void verificareCorectitudineArray(const string& id, int index, int line);
+void verificareCorectitudineId(const string& id,const string& var_type, int line);
+void verificareCorectitudineArray(const string& id, const string& var_type, int index, int line);
 void verificareCorectitudineFunct(const string& id, int line);
 void verificareCorectitudineClassId(const string& class_name, const string& class_var, int line);
 string getFuncValue(const string& id);
@@ -62,8 +62,6 @@ string exprflg = "none";
 %left UMINUS
 
 %%
-
-// AS PUTEA CONVERTI TOATE TIPURILE DE DATE IN valoare SI SA NU MAI SCRIU ACEIASI CHESTIE DE MAI MULTE ORI
 
 /***************** GENERAL RULES ******************/
 /*************************************************/
@@ -250,7 +248,7 @@ return_statement:
 
 statement:     
     IDENTIFIER ASSIGN valoare ';'  {checkVarIsDecl($1,$3,yylineno);}
-    | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,$4,$2,yylineno); } 
+    | IDENTIFIER dimensiune ASSIGN valoare ';' { checkArr($1,"arr",$4,$2,yylineno); } 
     | IDENTIFIER '~' IDENTIFIER ASSIGN valoare ';' {  variabile.assignClassEl($1,$3,$5,yylineno);  }
     | statement_call_function ';'
     | tpof_function ';' { printf("Type of: %s\n",$1); }
@@ -409,17 +407,17 @@ expr: expr ADD expr {
   |  INT_VALUE { verificareCorectitudineVal(strdup($1),"integer", yylineno);  $$= new ASTNode("integer",$1);}
   |  BOOL_VALUE { verificareCorectitudineVal(strdup($1),"boolean", yylineno); $$= new ASTNode("boolean",$1);;}
   |  REAL_VALUE { verificareCorectitudineVal(strdup($1),"real", yylineno); $$= new ASTNode("real",$1);}
-  |  IDENTIFIER { verificareCorectitudineId(strdup($1), yylineno);  
+  |  IDENTIFIER { verificareCorectitudineId(strdup($1),"var", yylineno);  
                   string temp = variabile.getValue($1);
                   if(temp == ""){
                     fprintf(stderr, "%d: Error: Use of uninitialized variable '%s'\n",yylineno, $1);
                     exit(EXIT_FAILURE); 
                   }
-                  $$= new ASTNode(variabile.getType($1),temp);
+                  $$= new ASTNode(variabile.getType($1,"var"),temp);
                   }
-  |  call_function { verificareCorectitudineId(strdup($1), yylineno); 
+  |  call_function { verificareCorectitudineId(strdup($1),"function", yylineno); 
                      string temp = getFuncValue($1);
-                     $$= new ASTNode(variabile.getType($1),temp);
+                     $$= new ASTNode(variabile.getType($1,"function"),temp);
                     }
   |  IDENTIFIER '~' IDENTIFIER { verificareCorectitudineClassId($1,$3,yylineno); 
                                 string temp = variabile.getClassIdValue($1, $3);
@@ -428,10 +426,10 @@ expr: expr ADD expr {
                                   exit(EXIT_FAILURE); 
                                 }
 
-                                 $$ = new ASTNode(variabile.getType($3),temp);
+                                 $$ = new ASTNode(variabile.getType($3,"var"),temp);
                                 }
-  |  IDENTIFIER dimensiune { verificareCorectitudineArray($1,$2, yylineno);  
-                             $$ = new ASTNode(variabile.getType($1), variabile.getArrayValue($1, $2));
+  |  IDENTIFIER dimensiune { verificareCorectitudineArray($1,"arr",$2, yylineno);  
+                             $$ = new ASTNode(variabile.getType($1,"arr"), variabile.getArrayValue($1, $2));
   }
   ;
     
@@ -540,13 +538,13 @@ void declArr(const string& name, const string& type, vector<string> values , boo
     variabile.addValuesToArr(name,values,size);    
 }
 
-void checkArr(const string& name, const string& value, int index, int line){
-    if(!variabile.existsVar(name)){
+void checkArr(const string& name,const string& var_type, const string& value, int index, int line){
+    if(!variabile.existsVar(name,var_type)){
         fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, name.c_str());
         exit(EXIT_FAILURE);
     }
-    if(!variabile.isCompatibleValue(variabile.getType(name),value)){
-           fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),variabile.getType(name).c_str());
+    if(!variabile.isCompatibleValue(variabile.getType(name,"arr"),value)){
+           fprintf(stderr, "%d: Error: Invalid value for variable '%s' of type %s\n",line, name.c_str(),variabile.getType(name,"arr").c_str());
            exit(EXIT_FAILURE); 
     }
     if(variabile.isConstant(name)){
@@ -585,12 +583,12 @@ void verificareCorectitudineVal(const string& value, const string& type, int lin
     }
 }
 
-void verificareCorectitudineId(const string& id, int line){
-    if(!variabile.existsVar(id)){
+void verificareCorectitudineId(const string& id, const string& var_type, int line){
+    if(!variabile.existsVar(id,var_type)){
         fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, id.c_str());
         exit(EXIT_FAILURE);
     }
-    string type = variabile.getType(id);
+    string type = variabile.getType(id,var_type);
     if(exprflg == "none"){
         exprflg = type;
     }
@@ -600,8 +598,8 @@ void verificareCorectitudineId(const string& id, int line){
         exit(EXIT_FAILURE);
     }
 }
-void verificareCorectitudineArray(const string& id, int index, int line){
-    if(!variabile.existsVar(id)){
+void verificareCorectitudineArray(const string& id, const string& var_type, int index, int line){
+    if(!variabile.existsVar(id,var_type)){
         fprintf(stderr, "%d: Error: Variable '%s' is not defined\n",line, id.c_str());
         exit(EXIT_FAILURE);
     }
@@ -622,7 +620,7 @@ void verificareCorectitudineClassId(const string& class_name, const string& clas
         fprintf(stderr, "%d: Error: Variable '%s~%s' is not defined\n",line, class_name.c_str(), class_var.c_str());
         exit(EXIT_FAILURE);
     }
-    string type = variabile.getType(class_var);
+    string type = variabile.getType(class_var,"var");
     if(exprflg == "none"){
         exprflg = type;
     }
@@ -634,7 +632,7 @@ void verificareCorectitudineClassId(const string& class_name, const string& clas
 }
 
 string getFuncValue(const string& id){
-    const string type = variabile.getType(id);
+    const string type = variabile.getType(id,"function");
     if(type == "integer") return "12";
     else if(type == "real") return "12.0";
     else if(type == "boolean") return "true";

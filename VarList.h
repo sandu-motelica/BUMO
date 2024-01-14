@@ -144,10 +144,13 @@ public:
             }
             else   return this->value;
     }
+    string getTypeof(){
+        if(children[0]->getTypeof()!=children[1]->getTypeof()){
+             return nullptr;
+        }
+        else return this->type;
+    }
 };
-
-
-
 
 
 struct Var {
@@ -188,10 +191,10 @@ class VarList {
     void addScopeParams(const string& scope);
     void addScopeVars(int count, const string& scope);
     void addLocationType(int count, const string& location);
-    bool existsVar(const string& name);
+    bool existsVar(const string& name,const string& var_type);
     string getValue(const string& name);
     string getClassIdValue(const string& class_name, const string& class_var);
-    string getType(const string& name);
+    string getType(const string& name, const string& var_type);
     bool isConstant(const string& name);
     void checkSyntax();
     ~VarList();

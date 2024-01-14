@@ -6,7 +6,7 @@ gf                          real                      10.4                      
 gs                          string                    "A string"                  main                            global                       var                 
 gc                          char                      'c'                         main                            global                       var                 
 gb                          boolean                   false                       main                            global                       var                 
-gtab                        integer                                               main                            global                       arr                 
+gtab                        integer                   1 2 3 6 8 10                main                            global                       arr                 
 mObj                        MyType                                                main                            global                       var                 
 x                           integer                   100                         mObj                            class                        var                 
 y                           integer                                               mObj                            class                        var                 
@@ -15,6 +15,6 @@ mix                         integer                   0                         
 ix                          integer                                               f                               global                       var                 
 condition                   boolean                   true                        check                           global                       var                 
 fy                          integer                                               mObj                            class                        function            tt:real tx:real tz:real 
-f                           integer                                               main                            global                       function            z:integer io:real s:string 
+f                           integer                                               main                            global                       function            z:integer f:real s:string 
 ff                          real                                                  main                            global                       function            x:integer 
 check                       boolean                                               main                            global                       function            

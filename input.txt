@@ -23,11 +23,11 @@ gf:real := 10.4;
 gs:string;
 gc:char;
 gb:boolean;
-gtab:integer[100];
+gtab:integer[100]:={1,2,3,6,8};
 mObj:MyType := new MyType();
 mix:integer:=0;
 functions:
-function f(z:integer,io:real,s:string):integer
+function f(z:integer,f:real,s:string):integer
   ix:integer;
 begin
   return 12;
@@ -51,13 +51,16 @@ begin
   gb:=false;
   gix1:=2;
   gix2:=100 + gix1;
-  gb:= gb == true && gix1 + f(10,10.5, gs ) > gix2;
+  Eval(gc);
+  Eval(f(10,10.5, gs));
+  Eval(check());
+  gb:= gb == true && gix1 + f(10,10.5, gs) > gix2;
   f(10, 10.5, gs);
   Eval(gb);
   Eval( gb==true || gix1==2);
   mObj~x := 100;
-  gtab[0] := 10;
-  gix1 := gix1 + f(10,10.5,gs) + mObj~x - gtab[0];
+  gtab[5] := 10;
+  gix1 := gix1 + f(10,10.5,gs) + mObj~x - gtab[5];
   TypeOf(gix1+5);
   TypeOf(gs);
 

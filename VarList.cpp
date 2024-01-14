@@ -18,12 +18,13 @@ void VarList::checkSyntax(){
     }
 }
 
-string getArrValues(int arrSize, const vector<string> arr) {
+string getArrValues(vector<string> arr) {
     string result;
 
     for (const auto& element : arr) {
         result = result + element + " ";
     }
+    // cout<<result<<endl;
 
     return result;
 }
@@ -201,9 +202,9 @@ void VarList::checkArgs(const string& name, vector<string> args,int line){
 
 }
 
-bool VarList::existsVar(const string& name){
+bool VarList::existsVar(const string& name, const string& var_type){
     for(const Var& v: vars){
-        if(name == v.name) {
+        if(name == v.name && var_type == v.var_type) {
             return true;
         }
     }
@@ -254,9 +255,9 @@ string VarList::getClassIdValue(const string& class_name, const string& class_va
     return "";
 }
 
-string VarList::getType(const string& name){
+string VarList::getType(const string& name,const string& var_type){
     for (Var& v : vars) {
-        if (name == v.name) {
+        if (name == v.name && v.var_type==var_type) {
             return v.type;
         }
     }
@@ -294,11 +295,10 @@ void VarList::assignValueArr(const string& name,const string& value, int index, 
         } else {
             v.arr[index] = value;
         }
-        for (const string& s : v.arr)
-            cout << s << " ";
+        cout <<name<<"["<<index<<"]"<<" "<< value << endl;
     }
-}
-    cout<<endl;
+    }
+ 
 }
 
 void VarList::addVarToTable(){
@@ -316,7 +316,7 @@ void VarList::addVarToTable(){
         }
         else {
             fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s\n", 
-            v.name.c_str(),v.type.c_str(),getArrValues(v.arrSize, v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+            v.name.c_str(),v.type.c_str(),getArrValues(v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
         }
 
     }
@@ -329,7 +329,7 @@ void VarList::addVarToTable(){
         }
         else {
             fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
-            v.name.c_str(),v.type.c_str(),getArrValues(v.arrSize, v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+            v.name.c_str(),v.type.c_str(),getArrValues( v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
         }
 
     for (Var& param : vars) {
@@ -359,12 +359,12 @@ void VarList::addScopeVars(int count, const string& scope){
     while (i != vars.begin() && count > 0)
     {
         i->scope = scope;
-        cout<<count<< " "<<i->name<<" "<< i->scope<<endl;
+        // cout<<count<< " "<<i->name<<" "<< i->scope<<endl;
         count--;
         i--;
         if(count>0 && i == vars.begin()){
             i->scope = scope;
-            cout<<count<< " "<<i->name<<" "<< i->scope<<endl;
+            // cout<<count<< " "<<i->name<<" "<< i->scope<<endl;
             count--;
         }
     } 
