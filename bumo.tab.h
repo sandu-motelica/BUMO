@@ -105,8 +105,10 @@ union YYSTYPE
     int intval;
     float ftval;
     bool bval;
+    class ASTNode* node;
 
-#line 110 "bumo.tab.h"
+
+#line 112 "bumo.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

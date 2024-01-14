@@ -2,6 +2,22 @@
 
 using namespace std;
 
+
+void VarList::checkSyntax(){
+    int i_counter = 0;
+    for(const Var& i: vars){
+        int j_counter = 0;
+        for(const Var& j: vars){
+            if(i.name == j.name && i.scope==j.scope && i_counter!=j_counter ){
+                fprintf(stderr, "%d: Error: '%s' is already defined\n",j.linie, j.name.c_str());
+                exit(EXIT_FAILURE);
+            }
+            j_counter++;
+        }
+        i_counter++;
+    }
+}
+
 string getArrValues(int arrSize, const vector<string> arr) {
     string result;
 
@@ -13,25 +29,25 @@ string getArrValues(int arrSize, const vector<string> arr) {
 }
 
 
-bool VarList::declareVariable(const string& name,const string& type, bool ct, const string& scope){
-    for(const Var& v: vars){
-        if(name == v.name) {
-            return false;
-        }
-    }
+bool VarList::declareVariable(const string& name,const string& type, bool ct, const string& scope,int line){
+    // for(const Var& v: vars){
+    //     if(name == v.name && v.scope==scope) {
+    //         return false;
+    //     }
+    // }
     string location_type = scope=="main" ? "global" : scope;
-    Var i = {"var",type,name,ct,scope,location_type};
+    Var i = {"var",type,name,ct,scope,location_type,"", line};
     vars.push_back(i); 
     
     return true;  
 }
 
-bool VarList::declareArr(const string& name,const string& type, bool ct, const string& scope){
-    for(const Var& v: vars){
-        if(name == v.name) {
-            return false;
-        }
-    }
+bool VarList::declareArr(const string& name,const string& type, bool ct, const string& scope, int line){
+    // for(const Var& v: vars){
+    //     if(name == v.name && v.scope==scope) {
+    //         return false;
+    //     }
+    // }
     string location_type = scope=="main" ? "global" : scope;
     Var i = {"arr",type,name,ct,scope,location_type};
     vars.push_back(i); 
@@ -39,10 +55,10 @@ bool VarList::declareArr(const string& name,const string& type, bool ct, const s
     return true;  
 }
 
-void VarList::initClassData(const string& name, const string& type){
+void VarList::initClassData(const string& name, const string& type, int line){
     for(const Var& v: vars){
         if(type == v.location_type) {   
-            Var i = {v.var_type, v.type, v.name, v.constant, name, "class",v.value,v.arr,v.arrSize};
+            Var i = {v.var_type, v.type, v.name, v.constant, name, "class",v.value, line, v.arr,v.arrSize};
             vars.push_back(i);   
         }
     }
@@ -164,7 +180,7 @@ bool VarList::isFunction(const string& name){
 
 void VarList::checkArgs(const string& name, vector<string> args,int line){
     reverse(args.begin(),args.end());
-    cout<<"ajunge\n";
+    // cout<<"ajunge\n";
     int len = args.size();
     int count = 0;
     for(const Var& v:vars){
@@ -174,7 +190,7 @@ void VarList::checkArgs(const string& name, vector<string> args,int line){
                 fprintf(stderr, "%d: Error: Invalid value for param '%s' of type %s\n",line,v.name.c_str(), v.type.c_str());
                 exit(EXIT_FAILURE);
             }
-            cout << v.name << " " << args.back()<< endl; 
+            // cout << v.name << " " << args.back()<< endl; 
             args.pop_back();
         }
     }
@@ -255,16 +271,16 @@ void VarList::addValuesToArr(const string& name, vector<string> values, int size
             v.var_type="arr";
             for(const string& s: values){
                 v.arr.push_back(s);
-                cout << s <<" ";
+                // cout << s <<" ";
             }
         } 
     }
-    cout<<endl;
+    // cout<<endl;
 }
 void VarList::assignValueArr(const string& name,const string& value, int index, int line){
     for (Var& v : vars) {
     if (name == v.name) {
-        cout << name << " " << index << " " << v.arrSize << endl;
+        // cout << name << " " << index << " " << v.arrSize << endl;
         if (v.arrSize < index) {
             fprintf(stderr, "%d: Error: arr index '%d' out of bounds.\n", line, index);
             exit(EXIT_FAILURE);
@@ -293,7 +309,20 @@ void VarList::addVarToTable(){
     }
 
  for (Var& v : vars) {
-    if((v.location_type!="func_param" && v.var_type!="class") &&( v.location_type=="global" || v.location_type=="class")) {
+    if((v.location_type!="func_param" && v.var_type!="class") &&( v.location_type=="global" || v.location_type=="class") && v.var_type!="function") {
+        if( v.arrSize ==0) {
+            fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s\n", 
+            v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+        }
+        else {
+            fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s\n", 
+            v.name.c_str(),v.type.c_str(),getArrValues(v.arrSize, v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
+        }
+
+    }
+ }
+ for (Var& v : vars) {
+    if((v.location_type!="func_param" && v.var_type!="class") &&( v.location_type=="global" || v.location_type=="class") && v.var_type=="function") {
         if( v.arrSize ==0) {
             fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
             v.name.c_str(),v.type.c_str(),v.value.c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
@@ -302,19 +331,16 @@ void VarList::addVarToTable(){
             fprintf(file, "%-20s        %-20s      %-20s        %-20s            %-20s         %-20s", 
             v.name.c_str(),v.type.c_str(),getArrValues(v.arrSize, v.arr).c_str(), v.scope.c_str(), v.location_type.c_str(), v.constant ? "constant" : v.var_type.c_str());
         }
-        //Print function params
 
- for (Var& param : vars) {
-    if(param.location_type=="func_param" && param.scope==v.name ) {
-        fprintf(file, "%s:%s ", 
-        param.name.c_str(), param.type.c_str()
-        );
-        //Print function params
-    
-    }
-    }
-        fprintf(file, "\n");
-    }
+    for (Var& param : vars) {
+        if(param.location_type=="func_param" && param.scope==v.name ) {
+            fprintf(file, "%s:%s ", 
+            param.name.c_str(), param.type.c_str()
+            );        
+        }
+        }
+            fprintf(file, "\n");
+        }
     }
     fclose(file);
 }
@@ -353,27 +379,27 @@ void VarList::addLocationType(int count, const string& location){
             i->location_type = location;
             count--;
         }
-        cout<<"clasa: "<<count<< " "<<i->name<<" "<<i->scope<<" "<< i->location_type<<endl;
+        // cout<<"clasa: "<<count<< " "<<i->name<<" "<<i->scope<<" "<< i->location_type<<endl;
         i--;
         if(count > 0 && i == vars.begin()){
             if(i->location_type != "func_param"){
                 i->location_type = location;
                 count--;
             }
-        cout<<"Clasa: "<<count<< " "<<i->name<<" "<<i->scope<<" "<< i->location_type<<endl;
+        // cout<<"Clasa: "<<count<< " "<<i->name<<" "<<i->scope<<" "<< i->location_type<<endl;
         }
     } 
     
 }
 
-bool VarList::declareFunc(const string& name,const string& type,const string& scope){
-    for(const Var& v: vars){
-        if(name == v.name) {
-            return false;
-        }
-    }
+bool VarList::declareFunc(const string& name,const string& type,const string& scope,int line){
+    // for(const Var& v: vars){
+    //     if(name == v.name) {
+    //         return false;
+    //     }
+    // }
     string location_type = scope=="main" ? "global" : scope;
-    Var i = {"function",type,name,false,scope,"global"};//update location_type (class implementation)
+    Var i = {"function",type,name,false,scope,"global","",line};//update location_type (class implementation)
     vars.push_back(i); 
     
     return true;  
@@ -385,7 +411,7 @@ bool VarList::declareClass(const string& name){
             return false;
         }
     }
-    Var i = {"class",name, name, false,"main","global"};//update location_type (class implementation)
+    Var i = {"class",name, name, false,"main","global"}; //update location_type (class implementation)
     vars.push_back(i); 
     
     return true;  
