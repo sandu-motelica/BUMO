@@ -1,5 +1,4 @@
-## Custom Programming Language using YACC/BISON
-
+## BUMO Programming Language
 
 ### Overview
 
